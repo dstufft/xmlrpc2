@@ -18,14 +18,11 @@ is_py3 = (_ver[0] == 3)
 if is_py2:
     import httplib
 
-    class http(object):
-        client = httplib
-
     bytes = str
     str = unicode
     basestring = basestring
 elif is_py3:
-    import http.client
+    import http.client as httplib
 
     str = str
     bytes = bytes

@@ -53,7 +53,7 @@ except ImportError:
     gzip = None #python can be built without zlib/gzip support
 
 
-from .compat import http
+from .compat import httplib
 
 
 # --------------------------------------------------------------------
@@ -1035,7 +1035,7 @@ class Transport:
             except socket.error as e:
                 if i or e.errno not in (errno.ECONNRESET, errno.ECONNABORTED, errno.EPIPE):
                     raise
-            except http.client.BadStatusLine: #close after we sent request
+            except httplib.BadStatusLine: #close after we sent request
                 if i:
                     raise
 
@@ -1119,7 +1119,7 @@ class Transport:
             return self._connection[1]
         # create a HTTP connection object from a host descriptor
         chost, self._extra_headers, x509 = self.get_host_info(host)
-        self._connection = host, http.client.HTTPConnection(chost)
+        self._connection = host, httplib.HTTPConnection(chost)
         return self._connection[1]
 
     ##
@@ -1230,13 +1230,13 @@ class SafeTransport(Transport):
         if self._connection and host == self._connection[0]:
             return self._connection[1]
 
-        if not hasattr(http.client, "HTTPSConnection"):
+        if not hasattr(httplib, "HTTPSConnection"):
             raise NotImplementedError(
-            "your version of http.client doesn't support HTTPS")
+            "your version of httplib doesn't support HTTPS")
         # create a HTTPS connection object from a host descriptor
         # host may be a string, or a (host, x509-dict) tuple
         chost, self._extra_headers, x509 = self.get_host_info(host)
-        self._connection = host, http.client.HTTPSConnection(chost,
+        self._connection = host, httplib.HTTPSConnection(chost,
             None, **(x509 or {}))
         return self._connection[1]
 
