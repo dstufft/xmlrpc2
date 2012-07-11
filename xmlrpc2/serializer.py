@@ -6,6 +6,7 @@ from lxml import etree
 from lxml.builder import E
 
 from .constants import MAXINT, MININT
+from .utils import iso8601
 
 from .compat import basestring, long, str
 
@@ -18,6 +19,8 @@ class Serializer(object):
         self.encoding = encoding
         self.allow_none = allow_none
 
+        self.memo = {}
+
     def dumps(self, method, arguments):
         methodCall = E.methodCall(
                 E.methodName(method),
@@ -29,6 +32,14 @@ class Serializer(object):
         print serialized
 
         return serialized
+
+    def loads(self, data):
+        # @@@ Detect Faults
+        methodResponse = etree.XML(data)
+
+        value = methodResponse.xpath("/methodResponse/params/param/value")[0][0]
+
+        return self.load_arg(value)
 
     def dump_arg(self, obj):
         if obj is None:
@@ -94,3 +105,44 @@ class Serializer(object):
 
         else:
             raise TypeError("Cannot serialize object of type %s" % type(obj))
+
+    def load_arg(self, obj):
+        if obj.tag == "nil":
+            return None
+        elif obj.tag == "int":
+            return int(obj.text)
+        elif obj.tag == "boolean":
+            if obj.text == "1":
+                return True
+            elif obj.text == "0":
+                return False
+            else:
+                raise TypeError("Cannot deserialize boolean %s is not a valid value" % obj.text)
+        elif obj.tag == "double":
+            return float(obj.text)
+        elif obj.tag == "string":
+            return str(obj.text)
+        elif obj.tag == "dateTime.iso8601":
+            return iso8601.parse(obj.text)
+        elif obj.tag == "struct":
+            data = {}
+
+            for member in obj:
+                key, value = None, None
+
+                for item in member:
+                    if item.tag == "name":
+                        key = item.text
+                    elif item.tag == "value":
+                        value = self.load_arg(item[0])
+
+                if key is None or value is None:
+                    raise TypeError("Cannot deserialize struct it is missing name or value tags in members")
+
+                data[key] = value
+
+            return data
+        elif obj.tag == "array":
+            return [self.load_arg(x[0]) for x in obj[0]]
+        else:
+            raise TypeError("Cannot unserialize %s. Unknown Type." % obj)

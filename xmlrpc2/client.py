@@ -698,7 +698,7 @@ class Client(UnicodeMixin, object):
         response = self._session.post(self._uri, body)
         response.raise_for_status()
 
-        result = loads(response.text.encode("utf-8"))[0]
+        result = self._loads(response.text.encode("utf-8"))
 
         if len(result) == 1:
             result = result[0]
@@ -708,3 +708,7 @@ class Client(UnicodeMixin, object):
     def _dumps(self, method, arguments):
         s = Serializer(encoding=self._encoding, allow_none=self._allow_none)
         return s.dumps(method, arguments)
+
+    def _loads(self, data):
+        s = Serializer(encoding=self._encoding, allow_none=self._allow_none)
+        return s.loads(data)
