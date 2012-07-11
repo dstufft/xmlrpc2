@@ -89,9 +89,6 @@ def test_comparison():
         dtime == 1970
 
     with pytest.raises(TypeError):
-        dtime != dbytes
-
-    with pytest.raises(TypeError):
         dtime == bytearray(dbytes)
 
     with pytest.raises(TypeError):
@@ -101,10 +98,23 @@ def test_comparison():
         dtime < float(1970)
 
     with pytest.raises(TypeError):
-        dtime > dbytes
-
-    with pytest.raises(TypeError):
         dtime <= bytearray(dbytes)
 
     with pytest.raises(TypeError):
         dtime >= dtuple
+
+
+@pytest.mark.skipif("sys.version_info < (3,0)")
+def test_comparison_py3k():
+    now = datetime.datetime.now()
+
+    dstr = now.strftime("%Y%m%dT%H:%M:%S")
+    dbytes = dstr.encode("ascii")
+
+    dtime = xmlrpc2.client.DateTime(now.timetuple())
+
+    with pytest.raises(TypeError):
+        dtime != dbytes
+
+    with pytest.raises(TypeError):
+        dtime > dbytes
