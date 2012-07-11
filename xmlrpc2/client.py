@@ -4,7 +4,6 @@ from __future__ import division
 import base64
 import cgi
 import datetime
-import time
 
 from xml.parsers import expat
 
