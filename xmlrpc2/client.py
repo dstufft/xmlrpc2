@@ -1239,13 +1239,3 @@ class Client(object):
             )
 
     __str__ = __repr__
-
-    def __call__(self, attr):
-        """A workaround to get special attributes on the ServerProxy
-           without interfering with the magic __getattr__
-        """
-        if attr == "close":
-            return self._close
-        elif attr == "transport":
-            return self._transport
-        raise AttributeError("Attribute %r not found" % (attr,))
