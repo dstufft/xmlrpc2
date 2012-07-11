@@ -14,6 +14,7 @@ import requests
 
 from .constants import MAXINT, MININT
 from .exceptions import ProtocolError, ResponseError, Fault
+from .utils import iso8601
 
 
 from .compat import is_py2
@@ -46,10 +47,6 @@ def _strftime(value):
         value = time.localtime(value)
 
     return "%04d%02d%02dT%02d:%02d:%02d" % value[:6]
-
-
-def _datetime_type(data):
-    return datetime.datetime.strptime(data, "%Y%m%dT%H:%M:%S")
 
 ##
 # Wrapper for binary data.  This can be used to transport any kind
@@ -452,8 +449,7 @@ class Unmarshaller:
     dispatch["base64"] = end_base64
 
     def end_dateTime(self, data):
-        if self._use_datetime:
-            value = _datetime_type(data.strip())
+        value = iso8601.parse(data.strip())
         self.append(value)
     dispatch["dateTime.iso8601"] = end_dateTime
 
@@ -571,11 +567,7 @@ def getparser(use_datetime=True):
     if use_datetime and not datetime:
         raise ValueError("the datetime module is not available")
     if FastParser and FastUnmarshaller:
-        if use_datetime:
-            mkdatetime = _datetime_type
-        else:
-            mkdatetime = _datetime
-        target = FastUnmarshaller(True, False, _binary, mkdatetime, Fault)
+        target = FastUnmarshaller(True, False, _binary, iso8601.parse, Fault)
         parser = FastParser(target)
     else:
         target = Unmarshaller(use_datetime=use_datetime)
