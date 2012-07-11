@@ -1235,8 +1235,10 @@ class Client(object):
     __str__ = __repr__
 
     def __getattr__(self, name):
-        # magic method dispatcher
-        return _Method(self._request, name)
+        if not name.startswith("_"):
+            return _Method(self._request, name)
+
+        return super(Client, self).__getattr_(name)
 
     # note: to call a remote object with an non-standard name, use
     # result getattr(server, "strange-python-name")(args)
