@@ -1136,23 +1136,6 @@ class SafeTransport(Transport):
             None, **(x509 or {}))
         return self._connection[1]
 
-##
-# Standard server proxy.  This class establishes a virtual connection
-# to an XML-RPC server.
-# <p>
-# This class is available as ServerProxy and Server.  New code should
-# use ServerProxy, to avoid confusion.
-#
-# @def ServerProxy(uri, **options)
-# @param uri The connection point on the server.
-# @keyparam transport A transport factory, compatible with the
-#    standard transport class.
-# @keyparam encoding The default encoding used for 8-bit strings
-#    (default is UTF-8).
-# @keyparam verbose Use a true value to enable debugging output.
-#    (printed to standard output).
-# @see Transport
-
 
 class Client(UnicodeMixin, object):
     """
