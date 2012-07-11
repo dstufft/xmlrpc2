@@ -4,12 +4,6 @@ class XMLRPCException(Exception):
         return repr(self)
 
 
-class UnsupportedScheme(XMLRPCException):
-    """
-    Indicates that a client was initialized with an unsupported scheme.
-    """
-    pass
-
 ##
 # Indicates an HTTP-level protocol error.  This is raised by the HTTP
 # transport layer, if the server returns an error code other than 200

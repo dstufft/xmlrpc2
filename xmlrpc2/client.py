@@ -22,7 +22,6 @@ import requests
 
 from . import __version__
 from .constants import MAXINT, MININT
-from .exceptions import UnsupportedScheme
 from .exceptions import ProtocolError, ResponseError, Fault
 
 

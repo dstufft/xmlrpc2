@@ -161,13 +161,6 @@ def test_dump_none():
         xmlrpc2.client.dumps((arg1,))
 
 
-def test_get_host_info():
-    # see bug #3613, this raised a TypeError
-    transp = xmlrpc2.client.Transport()
-
-    assert transp.get_host_info("user@host.tld") == ("host.tld", [("Authorization", "Basic dXNlcg==")], {})
-
-
 @pytest.mark.skipif("sys.version_info < (3,0)")
 def test_dump_bytes():
     with pytest.raises(TypeError):
