@@ -1190,6 +1190,7 @@ class Client(UnicodeMixin, object):
 
             raise UnsupportedScheme(msg)
 
+        self._scheme = parsed.scheme
         self._host = parsed.netloc
         self._handler = parsed.path if parsed.path else "/RPC2"
 
@@ -1212,7 +1213,11 @@ class Client(UnicodeMixin, object):
         return super(Client, self).__getattr_(name)
 
     def __unicode__(self):
-        return "Client for %s%s" % (self._host, self._handler)
+        uri = urllib_parse.urlunparse([self._scheme, self._host, self._handler, None, None, None])
+        return "<Client (%s)>" % uri
+
+    def __repr__(self):
+        return self.__str__()
 
     def _close(self):
         self._transport.close()
