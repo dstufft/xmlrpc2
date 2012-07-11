@@ -24,7 +24,7 @@ from .exceptions import ProtocolError, ResponseError, Fault
 
 
 from .compat import is_py2
-from .compat import httplib, urllib_parse, basestring, bytes, str
+from .compat import UnicodeMixin, httplib, urllib_parse, basestring, bytes, str
 
 
 ##
@@ -1154,7 +1154,7 @@ class SafeTransport(Transport):
 # @see Transport
 
 
-class Client(object):
+class Client(UnicodeMixin, object):
     """
     uri [,options] -> a logical connection to an XML-RPC server
 
@@ -1211,6 +1211,9 @@ class Client(object):
 
         return super(Client, self).__getattr_(name)
 
+    def __unicode__(self):
+        return "Client for %s%s" % (self._host, self._handler)
+
     def _close(self):
         self._transport.close()
 
@@ -1231,11 +1234,3 @@ class Client(object):
             response = response[0]
 
         return response
-
-    def __repr__(self):
-        return (
-            "<ServerProxy for %s%s>" %
-            (self._host, self._handler)
-            )
-
-    __str__ = __repr__
