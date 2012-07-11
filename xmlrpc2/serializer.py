@@ -2,11 +2,9 @@ import datetime
 
 from collections import Iterable, Mapping
 
-from lxml import etree
-from lxml.builder import E
-
 from .constants import MAXINT, MININT
 from .utils import iso8601
+from .utils.xml import E, etree
 
 from .compat import basestring, long, str
 
