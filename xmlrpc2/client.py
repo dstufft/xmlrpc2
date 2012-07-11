@@ -53,7 +53,7 @@ except ImportError:
 
 
 from .compat import is_py2
-from .compat import httplib, urllib_parse, str
+from .compat import httplib, urllib_parse, basestring, str
 
 
 # --------------------------------------------------------------------
@@ -199,7 +199,7 @@ class DateTime:
     """
 
     def __init__(self, value=0):
-        if isinstance(value, str):
+        if isinstance(value, basestring):
             self.value = value
         else:
             self.value = _strftime(value)
