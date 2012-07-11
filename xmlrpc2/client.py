@@ -26,14 +26,6 @@ from .compat import is_py2
 from .compat import httplib, urllib_parse, basestring, bytes, str
 
 
-# --------------------------------------------------------------------
-# Special values
-
-##
-# Backwards compatibility
-
-boolean = Boolean = bool
-
 ##
 # Wrapper for XML-RPC DateTime values.  This converts a time value to
 # the format used by XML-RPC.
