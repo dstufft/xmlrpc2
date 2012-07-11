@@ -49,10 +49,6 @@ def test_dump_bare_datetime():
     assert newdt == dt
     assert m is None
 
-    (newdt,), m = xmlrpc2.client.loads(s, use_datetime=0)
-
-    assert newdt == xmlrpc2.client.DateTime("20050210T11:41:23")
-
 
 def test_datetime_before_1900():
     # same as before but with a date before 1900
@@ -62,21 +58,6 @@ def test_datetime_before_1900():
 
     assert newdt == dt
     assert m is None
-
-    (newdt,), m = xmlrpc2.client.loads(s, use_datetime=0)
-
-    assert newdt == xmlrpc2.client.DateTime("00010210T11:41:23")
-
-
-def test_bug_1164912():
-    d = xmlrpc2.client.DateTime()
-    ((new_d,), dummy) = xmlrpc2.client.loads(xmlrpc2.client.dumps((d,), methodresponse=True))
-
-    assert isinstance(new_d.value, str)
-
-    # Check that the output of dumps() is still an 8-bit string
-    s = xmlrpc2.client.dumps((new_d,), methodresponse=True)
-    assert isinstance(s, str)
 
 
 def test_newstyle_class():
