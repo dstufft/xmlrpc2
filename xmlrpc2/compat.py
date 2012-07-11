@@ -32,6 +32,9 @@ if is_py2:
     bytes = str
     str = unicode
     basestring = basestring
+
+    class UnicodeMixin(object):
+        __str__ = lambda x: unicode(x).encode("utf-8")
 elif is_py3:
     import http.client as httplib
     import urllib.parse as urllib_parse
@@ -39,3 +42,6 @@ elif is_py3:
     str = str
     bytes = bytes
     basestring = (str, bytes)
+
+    class UnicodeMixin(object):
+        __str__ = lambda x: x.__unicode__()
