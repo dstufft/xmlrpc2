@@ -1153,8 +1153,9 @@ class SafeTransport(Transport):
 # @see Transport
 
 
-class ServerProxy:
-    """uri [,options] -> a logical connection to an XML-RPC server
+class Client(object):
+    """
+    uri [,options] -> a logical connection to an XML-RPC server
 
     uri is the connection point on the server, given as
     scheme://host/target.
@@ -1175,9 +1176,8 @@ class ServerProxy:
     the given encoding.
     """
 
-    def __init__(self, uri, transport=None, encoding=None, verbose=False,
-                 allow_none=False, use_datetime=False):
-        # establish a "logical" server connection
+    def __init__(self, uri, transport=None, encoding=None, verbose=False, allow_none=False, use_datetime=False, *args, **kwargs):
+        super(Client, self).__init__(*args, **kwargs)
 
         # get the url
         type, uri = urllib_parse.splittype(uri)

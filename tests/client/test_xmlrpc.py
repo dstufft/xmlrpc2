@@ -183,7 +183,7 @@ def test_ssl_presence():
         has_ssl = True
 
     try:
-        xmlrpc2.client.ServerProxy("https://localhost:9999").bad_function()
+        xmlrpc2.client.Client("https://localhost:9999").bad_function()
     except NotImplementedError:
         assert not has_ssl, "xmlrpc2 client's error with SSL support"
     except socket.error:
