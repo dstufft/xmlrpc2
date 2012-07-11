@@ -1240,9 +1240,6 @@ class Client(object):
 
     __str__ = __repr__
 
-    # note: to call a remote object with an non-standard name, use
-    # result getattr(server, "strange-python-name")(args)
-
     def __call__(self, attr):
         """A workaround to get special attributes on the ServerProxy
            without interfering with the magic __getattr__
