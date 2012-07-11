@@ -30,6 +30,9 @@ except ImportError:
     pytz = None
 
 
+from ..compat import basestring
+
+
 __all__ = ["parse", "ParseError"]
 
 
