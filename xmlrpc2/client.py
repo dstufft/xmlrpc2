@@ -1193,6 +1193,10 @@ class Client(object):
         self._host = parsed.netloc
         self._handler = parsed.path if parsed.path else "/RPC2"
 
+        self._encoding = encoding if encoding is not None else "utf-8"
+        self._verbose = verbose
+        self._allow_none = allow_none
+
         if transport is None:
             if type == "https":
                 transport = SafeTransport(use_datetime=True)
@@ -1200,10 +1204,6 @@ class Client(object):
                 transport = Transport(use_datetime=True)
 
         self._transport = transport
-
-        self._encoding = encoding if encoding is not None else "utf-8"
-        self._verbose = verbose
-        self._allow_none = allow_none
 
     def _close(self):
         self._transport.close()
