@@ -1,6 +1,7 @@
 import pytest
 
 import xmlrpc2.client
+import xmlrpc2.server
 
 
 def test_repr():
@@ -25,7 +26,6 @@ def test_dump_fault():
         xmlrpc2.client.loads(s)
 
 
-@pytest.mark.xfail(reason="xmlrpc2.server has not yet been ported")
 def test_dotted_attribute():
     # this will raise AttributeError because code don't want us to use
     # private methods
