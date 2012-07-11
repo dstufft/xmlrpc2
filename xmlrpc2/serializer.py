@@ -27,11 +27,7 @@ class Serializer(object):
                 E.params(*[E.param(E.value(self.dump_arg(arg))) for arg in arguments]),
             )
 
-        serialized = etree.tostring(methodCall)
-
-        print serialized
-
-        return serialized
+        return etree.tostring(methodCall)
 
     def loads(self, data):
         # @@@ Detect Faults
