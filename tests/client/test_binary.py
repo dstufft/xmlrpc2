@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import division
+
 import base64
 
 import xmlrpc2.client
