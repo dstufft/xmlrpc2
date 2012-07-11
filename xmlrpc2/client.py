@@ -1179,7 +1179,7 @@ class Client(object):
 
     _supported_schemes = set(["http", "https"])
 
-    def __init__(self, uri, transport=None, encoding=None, verbose=False, allow_none=False, use_datetime=False, *args, **kwargs):
+    def __init__(self, uri, transport=None, encoding=None, verbose=False, allow_none=False, *args, **kwargs):
         super(Client, self).__init__(*args, **kwargs)
 
         parsed = urllib_parse.urlparse(uri)
@@ -1195,9 +1195,9 @@ class Client(object):
 
         if transport is None:
             if type == "https":
-                transport = SafeTransport(use_datetime=use_datetime)
+                transport = SafeTransport(use_datetime=True)
             else:
-                transport = Transport(use_datetime=use_datetime)
+                transport = Transport(use_datetime=True)
 
         self._transport = transport
 
