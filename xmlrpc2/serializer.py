@@ -92,7 +92,7 @@ class Serializer(object):
                 raise TypeError("Cannot serialize recursive sequences")
 
             self.memo[i] = None
-            members = [self.dump_arg(i) for i in obj]
+            members = [self.dump_arg(x) for x in obj]
             del self.memo[i]
 
             return E.array(E.data(*members))
