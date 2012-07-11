@@ -45,7 +45,6 @@ import time
 from xml.parsers import expat
 import socket
 import errno
-import urllib.parse
 from io import BytesIO
 try:
     import gzip
@@ -53,7 +52,8 @@ except ImportError:
     gzip = None #python can be built without zlib/gzip support
 
 
-from .compat import httplib
+from .compat import is_py2
+from .compat import httplib, urllib_parse
 
 
 # --------------------------------------------------------------------
@@ -1092,10 +1092,14 @@ class Transport:
         if isinstance(host, tuple):
             host, x509 = host
 
-        auth, host = urllib.parse.splituser(host)
+        auth, host = urllib_parse.splituser(host)
 
         if auth:
-            auth = urllib.parse.unquote_to_bytes(auth)
+            if is_py2:
+                auth = urllib_parse.unquote(auth)
+            else:
+                auth = urllib_parse.unquote_to_bytes(auth)
+
             auth = base64.encodebytes(auth).decode("utf-8")
             auth = "".join(auth.split()) # get rid of whitespace
             extra_headers = [
@@ -1284,10 +1288,10 @@ class ServerProxy:
         # establish a "logical" server connection
 
         # get the url
-        type, uri = urllib.parse.splittype(uri)
+        type, uri = urllib_parse.splittype(uri)
         if type not in ("http", "https"):
             raise IOError("unsupported XML-RPC protocol")
-        self.__host, self.__handler = urllib.parse.splithost(uri)
+        self.__host, self.__handler = urllib_parse.splithost(uri)
         if not self.__handler:
             self.__handler = "/RPC2"
 
