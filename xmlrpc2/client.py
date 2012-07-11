@@ -1243,7 +1243,3 @@ class ServerProxy:
         elif attr == "transport":
             return self.__transport
         raise AttributeError("Attribute %r not found" % (attr,))
-
-# compatibility
-
-Server = ServerProxy
