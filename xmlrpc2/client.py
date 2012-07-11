@@ -477,6 +477,9 @@ class Marshaller:
         write("</string></value>\n")
     dispatch[str] = dump_unicode
 
+    if is_py2:
+        dispatch[bytes] = dump_unicode
+
     def dump_array(self, value, write):
         i = id(value)
         if i in self.memo:
