@@ -1,4 +1,5 @@
 import base64
+import datetime
 import time
 from xml.parsers import expat
 import socket
@@ -17,11 +18,6 @@ from .compat import httplib, urllib_parse, basestring, bytes, str
 
 # --------------------------------------------------------------------
 # Internal stuff
-
-try:
-    import datetime
-except ImportError:
-    datetime = None
 
 
 def escape(s):
@@ -146,11 +142,10 @@ boolean = Boolean = bool
 
 
 def _strftime(value):
-    if datetime:
-        if isinstance(value, datetime.datetime):
-            return "%04d%02d%02dT%02d:%02d:%02d" % (
-                value.year, value.month, value.day,
-                value.hour, value.minute, value.second)
+    if isinstance(value, datetime.datetime):
+        return "%04d%02d%02dT%02d:%02d:%02d" % (
+            value.year, value.month, value.day,
+            value.hour, value.minute, value.second)
 
     if not isinstance(value, (tuple, time.struct_time)):
         if value == 0:
@@ -176,7 +171,7 @@ class DateTime:
         if isinstance(other, DateTime):
             s = self.value
             o = other.value
-        elif datetime and isinstance(other, datetime.datetime):
+        elif isinstance(other, datetime.datetime):
             s = self.value
             o = other.strftime("%Y%m%dT%H:%M:%S")
         elif isinstance(other, str):
@@ -490,12 +485,11 @@ class Marshaller:
         del self.memo[i]
     dispatch[dict] = dump_struct
 
-    if datetime:
-        def dump_datetime(self, value, write):
-            write("<value><dateTime.iso8601>")
-            write(_strftime(value))
-            write("</dateTime.iso8601></value>\n")
-        dispatch[datetime.datetime] = dump_datetime
+    def dump_datetime(self, value, write):
+        write("<value><dateTime.iso8601>")
+        write(_strftime(value))
+        write("</dateTime.iso8601></value>\n")
+    dispatch[datetime.datetime] = dump_datetime
 
     def dump_instance(self, value, write):
         # check for special wrappers
