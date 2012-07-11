@@ -53,7 +53,7 @@ except ImportError:
 
 
 from .compat import is_py2
-from .compat import httplib, urllib_parse
+from .compat import httplib, urllib_parse, str
 
 
 # --------------------------------------------------------------------

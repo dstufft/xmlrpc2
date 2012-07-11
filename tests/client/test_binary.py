@@ -2,6 +2,8 @@ import base64
 
 import xmlrpc2.client
 
+from xmlrpc2.compat import str
+
 # @@@ What should str(Binary(b"\xff")) return?  I'm chosing "\xff"
 #     for now (i.e. interpreting the binary data as Latin-1-encoded
 #     text).  But this feels very unsatisfactory.  Perhaps we should
