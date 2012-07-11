@@ -36,18 +36,10 @@ ISO8601_REGEX = re.compile(
 )
 TIMEZONE_REGEX = re.compile("(?P<prefix>[+-])(?P<hours>[0-9]{2}).(?P<minutes>[0-9]{2})")
 
-
-class ParseError(Exception):
-    """Raised when there is a problem parsing a date string"""
-
-# Yoinked from python docs
 ZERO = datetime.timedelta(0)
 
 
 class Utc(datetime.tzinfo):
-    """UTC
-
-    """
     def utcoffset(self, dt):
         return ZERO
 
@@ -59,6 +51,10 @@ class Utc(datetime.tzinfo):
 
 
 UTC = Utc()
+
+
+class ParseError(Exception):
+    """Raised when there is a problem parsing a date string"""
 
 
 class FixedOffset(datetime.tzinfo):
