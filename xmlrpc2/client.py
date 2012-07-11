@@ -4,8 +4,6 @@ from __future__ import division
 import base64
 import cgi
 import datetime
-import errno
-import socket
 import time
 
 from io import BytesIO
@@ -20,13 +18,12 @@ except ImportError:
 import requests
 
 
-from . import __version__
 from .constants import MAXINT, MININT
 from .exceptions import ProtocolError, ResponseError, Fault
 
 
 from .compat import is_py2
-from .compat import UnicodeMixin, httplib, urllib_parse, basestring, bytes, str
+from .compat import UnicodeMixin, basestring, bytes, str
 
 
 ##
