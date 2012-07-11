@@ -1179,7 +1179,7 @@ class Client(UnicodeMixin, object):
 
     _supported_schemes = set(["http", "https"])
 
-    def __init__(self, uri, transport=None, encoding=None, verbose=False, allow_none=False, *args, **kwargs):
+    def __init__(self, uri, transport=None, encoding=None, allow_none=False, *args, **kwargs):
         super(Client, self).__init__(*args, **kwargs)
 
         parsed = urllib_parse.urlparse(uri)
@@ -1195,7 +1195,6 @@ class Client(UnicodeMixin, object):
         self._handler = parsed.path if parsed.path else "/RPC2"
 
         self._encoding = encoding if encoding is not None else "utf-8"
-        self._verbose = verbose
         self._allow_none = allow_none
 
         if transport is None:
@@ -1230,7 +1229,7 @@ class Client(UnicodeMixin, object):
             self._host,
             self._handler,
             request,
-            verbose=self._verbose
+            verbose=None
             )
 
         if len(response) == 1:
