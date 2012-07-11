@@ -24,6 +24,11 @@ from __future__ import division
 import datetime
 import re
 
+try:
+    import pytz
+except ImportError:
+    pytz = None
+
 
 __all__ = ["parse", "ParseError"]
 
@@ -39,7 +44,16 @@ TIMEZONE_REGEX = re.compile("(?P<prefix>[+-])(?P<hours>[0-9]{2}).(?P<minutes>[0-
 ZERO = datetime.timedelta(0)
 
 
-class Utc(datetime.tzinfo):
+class UTC(datetime.tzinfo):
+    """
+    UTC implementation taken from Python's docs.
+
+    Used only when pytz isn't available.
+    """
+
+    def __repr__(self):
+        return "<UTC>"
+
     def utcoffset(self, dt):
         return ZERO
 
@@ -50,7 +64,7 @@ class Utc(datetime.tzinfo):
         return ZERO
 
 
-UTC = Utc()
+utc = pytz.utc if pytz else UTC()
 
 
 class ParseError(Exception):
@@ -78,7 +92,7 @@ class FixedOffset(datetime.tzinfo):
         return "<FixedOffset %r>" % self.__name
 
 
-def _parse_timezone(tzstring, default_timezone=UTC):
+def _parse_timezone(tzstring, default_timezone=utc):
     """
     Parses ISO 8601 time zone specs into tzinfo offsets
     """
@@ -98,7 +112,7 @@ def _parse_timezone(tzstring, default_timezone=UTC):
     return FixedOffset(hours, minutes, tzstring)
 
 
-def parse(datestring, default_timezone=UTC):
+def parse(datestring, default_timezone=utc):
     """
     Parses ISO 8601 dates into datetime objects
 
