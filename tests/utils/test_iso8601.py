@@ -1,3 +1,5 @@
+import pytest
+
 from xmlrpc2.utils import iso8601
 
 
@@ -72,21 +74,13 @@ def test_parse_date_tz():
 
 
 def test_parse_invalid_date():
-    try:
+    with pytest.raises(iso8601.ParseError):
         iso8601.parse_date(None)
-    except iso8601.ParseError:
-        pass
-    else:
-        assert 1 == 2
 
 
 def test_parse_invalid_date2():
-    try:
+    with pytest.raises(iso8601.ParseError):
         iso8601.parse_date("23")
-    except iso8601.ParseError:
-        pass
-    else:
-        assert 1 == 2
 
 
 def test_parse_no_timezone():
