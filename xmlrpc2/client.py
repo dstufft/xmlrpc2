@@ -4,7 +4,6 @@ from __future__ import division
 import base64
 import cgi
 import datetime
-import time
 
 from xml.parsers import expat
 
@@ -14,133 +13,12 @@ import requests
 
 from .constants import MAXINT, MININT
 from .exceptions import ProtocolError, ResponseError, Fault
+from .utils import iso8601
 
 
 from .compat import is_py2
 from .compat import UnicodeMixin, basestring, bytes, str
 
-
-##
-# Wrapper for XML-RPC DateTime values.  This converts a time value to
-# the format used by XML-RPC.
-# <p>
-# The value can be given as a string in the format
-# "yyyymmddThh:mm:ss", as a 9-item time tuple (as returned by
-# time.localtime()), or an integer value (as returned by time.time()).
-# The wrapper uses time.localtime() to convert an integer to a time
-# tuple.
-#
-# @param value The time, given as an ISO 8601 string, a time
-#              tuple, or a integer time value.
-
-
-def _strftime(value):
-    if isinstance(value, datetime.datetime):
-        return "%04d%02d%02dT%02d:%02d:%02d" % (
-            value.year, value.month, value.day,
-            value.hour, value.minute, value.second)
-
-    if not isinstance(value, (tuple, time.struct_time)):
-        if value == 0:
-            value = time.time()
-        value = time.localtime(value)
-
-    return "%04d%02d%02dT%02d:%02d:%02d" % value[:6]
-
-
-class DateTime:
-    """DateTime wrapper for an ISO 8601 string or time tuple or
-    localtime integer value to generate 'dateTime.iso8601' XML-RPC
-    value.
-    """
-
-    def __init__(self, value=0):
-        if isinstance(value, basestring):
-            self.value = value
-        else:
-            self.value = _strftime(value)
-
-    def make_comparable(self, other):
-        if isinstance(other, DateTime):
-            s = self.value
-            o = other.value
-        elif isinstance(other, datetime.datetime):
-            s = self.value
-            o = other.strftime("%Y%m%dT%H:%M:%S")
-        elif isinstance(other, str):
-            s = self.value
-            o = other
-        elif isinstance(other, bytes) and is_py2:
-            s = self.value
-            o = other
-        elif hasattr(other, "timetuple"):
-            s = self.timetuple()
-            o = other.timetuple()
-        else:
-            otype = (hasattr(other, "__class__")
-                     and other.__class__.__name__
-                     or type(other))
-            raise TypeError("Can't compare %s and %s" %
-                            (self.__class__.__name__, otype))
-        return s, o
-
-    def __lt__(self, other):
-        s, o = self.make_comparable(other)
-        return s < o
-
-    def __le__(self, other):
-        s, o = self.make_comparable(other)
-        return s <= o
-
-    def __gt__(self, other):
-        s, o = self.make_comparable(other)
-        return s > o
-
-    def __ge__(self, other):
-        s, o = self.make_comparable(other)
-        return s >= o
-
-    def __eq__(self, other):
-        s, o = self.make_comparable(other)
-        return s == o
-
-    def __ne__(self, other):
-        s, o = self.make_comparable(other)
-        return s != o
-
-    def timetuple(self):
-        return time.strptime(self.value, "%Y%m%dT%H:%M:%S")
-
-    ##
-    # Get date/time value.
-    #
-    # @return Date/time value, as an ISO 8601 string.
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return "<DateTime %r at %x>" % (self.value, id(self))
-
-    def decode(self, data):
-        self.value = str(data).strip()
-
-    def encode(self, out):
-        out.write("<value><dateTime.iso8601>")
-        out.write(self.value)
-        out.write("</dateTime.iso8601></value>\n")
-
-
-def _datetime(data):
-    # decode xml element contents into a DateTime structure.
-    value = DateTime()
-    value.decode(data)
-    return value
-
-
-def _datetime_type(data):
-    t = time.strptime(data, "%Y%m%dT%H:%M:%S")
-    return datetime.datetime(*tuple(t)[:6])
 
 ##
 # Wrapper for binary data.  This can be used to transport any kind
@@ -197,7 +75,7 @@ def _binary(data):
     value.decode(data)
     return value
 
-WRAPPERS = (DateTime, Binary)
+WRAPPERS = (Binary,)
 
 # --------------------------------------------------------------------
 # XML parsers
@@ -380,7 +258,7 @@ class Marshaller:
 
     def dump_datetime(self, value, write):
         write("<value><dateTime.iso8601>")
-        write(_strftime(value))
+        write(value.isoformat())
         write("</dateTime.iso8601></value>\n")
     dispatch[datetime.datetime] = dump_datetime
 
@@ -393,7 +271,6 @@ class Marshaller:
         else:
             # store instance attributes as a struct (really?)
             self.dump_struct(value.__dict__, write)
-    dispatch[DateTime] = dump_instance
     dispatch[Binary] = dump_instance
     # XXX(twouters): using "_arbitrary_instance" as key as a quick-fix
     # for the p3yk merge, this should probably be fixed more neatly.
@@ -417,7 +294,7 @@ class Unmarshaller:
     # and again, if you don't understand what's going on in here,
     # that's perfectly ok.
 
-    def __init__(self, use_datetime=False):
+    def __init__(self):
         self._type = None
         self._stack = []
         self._marks = []
@@ -425,9 +302,6 @@ class Unmarshaller:
         self._methodname = None
         self._encoding = "utf-8"
         self.append = self._stack.append
-        self._use_datetime = use_datetime
-        if use_datetime and not datetime:
-            raise ValueError("the datetime module is not available")
 
     def close(self):
         # return response tuple and target method
@@ -544,10 +418,7 @@ class Unmarshaller:
     dispatch["base64"] = end_base64
 
     def end_dateTime(self, data):
-        value = DateTime()
-        value.decode(data)
-        if self._use_datetime:
-            value = _datetime_type(data)
+        value = iso8601.parse(data.strip())
         self.append(value)
     dispatch["dateTime.iso8601"] = end_dateTime
 
@@ -656,23 +527,17 @@ FastMarshaller = FastParser = FastUnmarshaller = None
 # return A (parser, unmarshaller) tuple.
 
 
-def getparser(use_datetime=False):
+def getparser():
     """getparser() -> parser, unmarshaller
 
     Create an instance of the fastest available parser, and attach it
     to an unmarshalling object.  Return both objects.
     """
-    if use_datetime and not datetime:
-        raise ValueError("the datetime module is not available")
     if FastParser and FastUnmarshaller:
-        if use_datetime:
-            mkdatetime = _datetime_type
-        else:
-            mkdatetime = _datetime
-        target = FastUnmarshaller(True, False, _binary, mkdatetime, Fault)
+        target = FastUnmarshaller(True, False, _binary, iso8601.parse, Fault)
         parser = FastParser(target)
     else:
-        target = Unmarshaller(use_datetime=use_datetime)
+        target = Unmarshaller()
         if FastParser:
             parser = FastParser(target)
         else:
@@ -771,7 +636,7 @@ def dumps(params, methodname=None, methodresponse=None, encoding=None,
 # @see Fault
 
 
-def loads(data, use_datetime=False):
+def loads(data):
     """data -> unmarshalled data, method name
 
     Convert an XML-RPC packet to unmarshalled data plus a method
@@ -780,7 +645,7 @@ def loads(data, use_datetime=False):
     If the XML-RPC packet represents a fault condition, this function
     raises a Fault exception.
     """
-    p, u = getparser(use_datetime=use_datetime)
+    p, u = getparser()
     p.feed(data)
     p.close()
     return u.close(), u.getmethodname()

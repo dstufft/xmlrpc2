@@ -19,6 +19,10 @@ setup(
 
     install_requires=install_requires,
 
+    extras_require={
+        "pytz": ["pytz"],
+    },
+
     packages=find_packages(exclude=["tests"]),
     zip_safe=False,
 )

@@ -10,6 +10,7 @@ import pytest
 import xmlrpc2.client
 
 from xmlrpc2.compat import str
+from xmlrpc2.utils import iso8601
 
 
 DUMMY_DATA = [
@@ -23,9 +24,8 @@ DUMMY_DATA = [
         "boolean": False,
         "unicode": str("\u4000\u6000\u8000"),
         str("ukey\u4000"): "regular value",
-        "datetime1": xmlrpc2.client.DateTime("20050210T11:41:23"),
-        "datetime2": xmlrpc2.client.DateTime((2005, 2, 10, 11, 41, 23, 0, 1, -1)),
-        "datetime3": xmlrpc2.client.DateTime(datetime.datetime(2005, 2, 10, 11, 41, 23)),
+        "datetime1": iso8601.parse("20050210T11:41:23"),
+        "datetime2": datetime.datetime(2005, 2, 10, 11, 41, 23, tzinfo=iso8601.utc),
     },
 ]
 
@@ -42,41 +42,22 @@ def test_dump_bare_datetime():
     # by the marshalling code.  This can't be done via test_dump_load()
     # since with use_datetime set to 1 the unmarshaller would create
     # datetime objects for the 'datetime[123]' keys as well
-    dt = datetime.datetime(2005, 2, 10, 11, 41, 23)
+    dt = datetime.datetime(2005, 2, 10, 11, 41, 23, tzinfo=iso8601.utc)
     s = xmlrpc2.client.dumps((dt,))
-    (newdt,), m = xmlrpc2.client.loads(s, use_datetime=1)
+    (newdt,), m = xmlrpc2.client.loads(s)
 
     assert newdt == dt
     assert m is None
-
-    (newdt,), m = xmlrpc2.client.loads(s, use_datetime=0)
-
-    assert newdt == xmlrpc2.client.DateTime("20050210T11:41:23")
 
 
 def test_datetime_before_1900():
     # same as before but with a date before 1900
-    dt = datetime.datetime(1,  2, 10, 11, 41, 23)
+    dt = datetime.datetime(1,  2, 10, 11, 41, 23, tzinfo=iso8601.utc)
     s = xmlrpc2.client.dumps((dt,))
-    (newdt,), m = xmlrpc2.client.loads(s, use_datetime=1)
+    (newdt,), m = xmlrpc2.client.loads(s)
 
     assert newdt == dt
     assert m is None
-
-    (newdt,), m = xmlrpc2.client.loads(s, use_datetime=0)
-
-    assert newdt == xmlrpc2.client.DateTime("00010210T11:41:23")
-
-
-def test_bug_1164912():
-    d = xmlrpc2.client.DateTime()
-    ((new_d,), dummy) = xmlrpc2.client.loads(xmlrpc2.client.dumps((d,), methodresponse=True))
-
-    assert isinstance(new_d.value, str)
-
-    # Check that the output of dumps() is still an 8-bit string
-    s = xmlrpc2.client.dumps((new_d,), methodresponse=True)
-    assert isinstance(s, str)
 
 
 def test_newstyle_class():
