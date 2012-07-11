@@ -294,7 +294,7 @@ class Unmarshaller:
     # and again, if you don't understand what's going on in here,
     # that's perfectly ok.
 
-    def __init__(self, use_datetime=True):
+    def __init__(self):
         self._type = None
         self._stack = []
         self._marks = []
@@ -302,9 +302,6 @@ class Unmarshaller:
         self._methodname = None
         self._encoding = "utf-8"
         self.append = self._stack.append
-        self._use_datetime = use_datetime
-        if use_datetime and not datetime:
-            raise ValueError("the datetime module is not available")
 
     def close(self):
         # return response tuple and target method
@@ -530,19 +527,17 @@ FastMarshaller = FastParser = FastUnmarshaller = None
 # return A (parser, unmarshaller) tuple.
 
 
-def getparser(use_datetime=True):
+def getparser():
     """getparser() -> parser, unmarshaller
 
     Create an instance of the fastest available parser, and attach it
     to an unmarshalling object.  Return both objects.
     """
-    if use_datetime and not datetime:
-        raise ValueError("the datetime module is not available")
     if FastParser and FastUnmarshaller:
         target = FastUnmarshaller(True, False, _binary, iso8601.parse, Fault)
         parser = FastParser(target)
     else:
-        target = Unmarshaller(use_datetime=use_datetime)
+        target = Unmarshaller()
         if FastParser:
             parser = FastParser(target)
         else:
@@ -641,7 +636,7 @@ def dumps(params, methodname=None, methodresponse=None, encoding=None,
 # @see Fault
 
 
-def loads(data, use_datetime=True):
+def loads(data):
     """data -> unmarshalled data, method name
 
     Convert an XML-RPC packet to unmarshalled data plus a method
@@ -650,7 +645,7 @@ def loads(data, use_datetime=True):
     If the XML-RPC packet represents a fault condition, this function
     raises a Fault exception.
     """
-    p, u = getparser(use_datetime=use_datetime)
+    p, u = getparser()
     p.feed(data)
     p.close()
     return u.close(), u.getmethodname()

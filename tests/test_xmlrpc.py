@@ -44,7 +44,7 @@ def test_dump_bare_datetime():
     # datetime objects for the 'datetime[123]' keys as well
     dt = datetime.datetime(2005, 2, 10, 11, 41, 23, tzinfo=iso8601.utc)
     s = xmlrpc2.client.dumps((dt,))
-    (newdt,), m = xmlrpc2.client.loads(s, use_datetime=1)
+    (newdt,), m = xmlrpc2.client.loads(s)
 
     assert newdt == dt
     assert m is None
@@ -54,7 +54,7 @@ def test_datetime_before_1900():
     # same as before but with a date before 1900
     dt = datetime.datetime(1,  2, 10, 11, 41, 23, tzinfo=iso8601.utc)
     s = xmlrpc2.client.dumps((dt,))
-    (newdt,), m = xmlrpc2.client.loads(s, use_datetime=1)
+    (newdt,), m = xmlrpc2.client.loads(s)
 
     assert newdt == dt
     assert m is None
