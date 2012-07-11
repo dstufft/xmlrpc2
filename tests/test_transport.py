@@ -15,3 +15,10 @@ def test_initalization(transport):
 
     with pytest.raises(TypeError):
         transport("example.com", 80, "/RPC2", None)
+
+
+def test_base_request():
+    t = xmlrpc2.transport.BaseTransport("example.com", 80, "/RPC2")
+
+    with pytest.raises(NotImplementedError):
+        t.request(None)
