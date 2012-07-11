@@ -79,8 +79,8 @@ class FixedOffset(datetime.tzinfo):
 
 
 def parse_timezone(tzstring, default_timezone=UTC):
-    """Parses ISO 8601 time zone specs into tzinfo offsets
-
+    """
+    Parses ISO 8601 time zone specs into tzinfo offsets
     """
     if tzstring == "Z":
         return default_timezone
@@ -99,7 +99,8 @@ def parse_timezone(tzstring, default_timezone=UTC):
 
 
 def parse(datestring, default_timezone=UTC):
-    """Parses ISO 8601 dates into datetime objects
+    """
+    Parses ISO 8601 dates into datetime objects
 
     The timezone is parsed from the date string. However it is quite common to
     have dates without a timezone (not strictly correct). In this case the
