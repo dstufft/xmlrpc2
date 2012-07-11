@@ -503,7 +503,7 @@ class Marshaller:
         write("<value><struct>\n")
         for k, v in value.items():
             write("<member>\n")
-            if not isinstance(k, str):
+            if not isinstance(k, basestring):
                 raise TypeError("dictionary key must be string")
             write("<name>%s</name>\n" % escape(k))
             dump(v, write)
