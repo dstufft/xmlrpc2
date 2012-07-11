@@ -2,7 +2,7 @@
 # Base class for all kinds of client-side errors.
 
 
-class Error(Exception):
+class XMLRPCException(Exception):
     """Base class for client errors."""
     def __str__(self):
         return repr(self)
@@ -18,10 +18,10 @@ class Error(Exception):
 # @param headers The HTTP header dictionary.
 
 
-class ProtocolError(Error):
+class ProtocolError(XMLRPCException):
     """Indicates an HTTP protocol error."""
     def __init__(self, url, errcode, errmsg, headers):
-        Error.__init__(self)
+        XMLRPCException.__init__(self)
         self.url = url
         self.errcode = errcode
         self.errmsg = errmsg
@@ -39,7 +39,7 @@ class ProtocolError(Error):
 # malformed.
 
 
-class ResponseError(Error):
+class ResponseError(XMLRPCException):
     """Indicates a broken response package."""
     pass
 
@@ -53,10 +53,10 @@ class ResponseError(Error):
 # @param faultString The XML-RPC fault string.
 
 
-class Fault(Error):
+class Fault(XMLRPCException):
     """Indicates an XML-RPC fault package."""
     def __init__(self, faultCode, faultString, **extra):
-        Error.__init__(self)
+        XMLRPCException.__init__(self)
         self.faultCode = faultCode
         self.faultString = faultString
 
