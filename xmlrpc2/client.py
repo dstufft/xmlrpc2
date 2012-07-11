@@ -49,8 +49,7 @@ def _strftime(value):
 
 
 def _datetime_type(data):
-    t = time.strptime(data, "%Y%m%dT%H:%M:%S")
-    return datetime.datetime(*tuple(t)[:6])
+    return datetime.datetime.strptime(data, "%Y%m%dT%H:%M:%S")
 
 ##
 # Wrapper for binary data.  This can be used to transport any kind
