@@ -53,7 +53,7 @@ except ImportError:
 
 
 from .compat import is_py2
-from .compat import httplib, urllib_parse, basestring, str
+from .compat import httplib, urllib_parse, basestring, bytes, str
 
 
 # --------------------------------------------------------------------
@@ -212,6 +212,9 @@ class DateTime:
             s = self.value
             o = other.strftime("%Y%m%dT%H:%M:%S")
         elif isinstance(other, str):
+            s = self.value
+            o = other
+        elif isinstance(other, bytes) and is_py2:
             s = self.value
             o = other
         elif hasattr(other, "timetuple"):
