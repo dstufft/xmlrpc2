@@ -1247,28 +1247,3 @@ class ServerProxy:
 # compatibility
 
 Server = ServerProxy
-
-# --------------------------------------------------------------------
-# test code
-
-if __name__ == "__main__":
-
-    # simple test program (from the XML-RPC specification)
-
-    # server = ServerProxy("http://localhost:8000") # local server
-    server = ServerProxy("http://time.xmlrpc.com/RPC2")
-
-    try:
-        print(server.currentTime.getCurrentTime())
-    except Error as v:
-        print("ERROR", v)
-
-    # The server at xmlrpc.com doesn't seem to support multicall anymore.
-    multi = MultiCall(server)
-    multi.currentTime.getCurrentTime()
-    multi.currentTime.getCurrentTime()
-    try:
-        for response in multi():
-            print(response)
-    except Error as v:
-        print("ERROR", v)
