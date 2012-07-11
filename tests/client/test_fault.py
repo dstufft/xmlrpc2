@@ -1,7 +1,6 @@
 import pytest
 
 import xmlrpc2.client
-import xmlrpc2.server
 
 
 def test_repr():
@@ -24,12 +23,3 @@ def test_dump_fault():
 
     with pytest.raises(xmlrpc2.client.Fault):
         xmlrpc2.client.loads(s)
-
-
-def test_dotted_attribute():
-    # this will raise AttributeError because code don't want us to use
-    # private methods
-    with pytest.raises(AttributeError):
-        xmlrpc2.server.resolve_dotted_attribute(str, "__add")
-
-    assert xmlrpc2.server.resolve_dotted_attribute(str, "title")
