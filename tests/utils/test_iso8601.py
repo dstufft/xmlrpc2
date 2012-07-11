@@ -25,7 +25,7 @@ def test_parse_date(input):
     assert d.hour == 15
     assert d.minute == 34
     assert d.second == 56
-    assert d.tzinfo == iso8601.UTC
+    assert d.tzinfo == iso8601.utc
 
 
 @pytest.mark.parametrize("input", ["2006-10-20T15:34:56.123Z", "20061020T15:34:56.123Z"])
@@ -39,7 +39,7 @@ def test_parse_date_fraction(input):
     assert d.minute == 34
     assert d.second == 56
     assert d.microsecond == 123000
-    assert d.tzinfo == iso8601.UTC
+    assert d.tzinfo == iso8601.utc
 
 
 @pytest.mark.parametrize("input", ["2007-5-7T11:43:55.328Z'"])
@@ -53,7 +53,7 @@ def test_parse_date_fraction_2(input):
     assert d.minute == 43
     assert d.second == 55
     assert d.microsecond == 328000
-    assert d.tzinfo == iso8601.UTC
+    assert d.tzinfo == iso8601.utc
 
 
 @pytest.mark.parametrize("input", ["2006-10-20T15:34:56.123+02:30", "20061020T15:34:56.123+02:30"])
@@ -101,7 +101,7 @@ def test_parse_no_timezone(input):
     assert d.minute == 0
     assert d.second == 0
     assert d.microsecond == 0
-    assert d.tzinfo == iso8601.UTC
+    assert d.tzinfo == iso8601.utc
 
 
 @pytest.mark.parametrize("input", ["2007-01-01T08:00:00", "20070101T08:00:00"])
@@ -125,4 +125,4 @@ def test_space_separator():
     assert d.minute == 40
     assert d.second == 34
     assert d.microsecond == 0
-    assert d.tzinfo == iso8601.UTC
+    assert d.tzinfo == iso8601.utc
