@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import base64
+import cgi
 import datetime
 import errno
 import socket
@@ -23,12 +24,6 @@ from .compat import httplib, urllib_parse, basestring, bytes, str
 
 # --------------------------------------------------------------------
 # Internal stuff
-
-
-def escape(s):
-    s = s.replace("&", "&amp;")
-    s = s.replace("<", "&lt;")
-    return s.replace(">", "&gt;",)
 
 
 # xmlrpc integer limits
@@ -448,7 +443,7 @@ class Marshaller:
         write("</double></value>\n")
     dispatch[float] = dump_double
 
-    def dump_unicode(self, value, write, escape=escape):
+    def dump_unicode(self, value, write, escape=cgi.escape):
         write("<value><string>")
         write(escape(value))
         write("</string></value>\n")
@@ -471,7 +466,7 @@ class Marshaller:
     dispatch[tuple] = dump_array
     dispatch[list] = dump_array
 
-    def dump_struct(self, value, write, escape=escape):
+    def dump_struct(self, value, write, escape=cgi.escape):
         i = id(value)
         if i in self.memo:
             raise TypeError("cannot marshal recursive dictionaries")
