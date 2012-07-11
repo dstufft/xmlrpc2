@@ -45,6 +45,7 @@ import time
 from xml.parsers import expat
 import socket
 import errno
+import urllib.parse
 from io import BytesIO
 try:
     import gzip
@@ -1091,7 +1092,6 @@ class Transport:
         if isinstance(host, tuple):
             host, x509 = host
 
-        import urllib.parse
         auth, host = urllib.parse.splituser(host)
 
         if auth:
@@ -1284,7 +1284,6 @@ class ServerProxy:
         # establish a "logical" server connection
 
         # get the url
-        import urllib.parse
         type, uri = urllib.parse.splittype(uri)
         if type not in ("http", "https"):
             raise IOError("unsupported XML-RPC protocol")
