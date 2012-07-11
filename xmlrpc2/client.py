@@ -449,13 +449,6 @@ class Marshaller:
         write("<value><int>")
         write(str(value))
         write("</int></value>\n")
-    #dispatch[int] = dump_int
-
-    def dump_bool(self, value, write):
-        write("<value><boolean>")
-        write(value and "1" or "0")
-        write("</boolean></value>\n")
-    dispatch[bool] = dump_bool
 
     def dump_long(self, value, write):
         if value > MAXINT or value < MININT:
@@ -463,7 +456,18 @@ class Marshaller:
         write("<value><int>")
         write(str(int(value)))
         write("</int></value>\n")
-    dispatch[int] = dump_long
+
+    if is_py2:
+        dispatch[long] = dump_long
+        dispatch[int] = dump_int
+    else:
+        dispatch[int] = dump_long
+
+    def dump_bool(self, value, write):
+        write("<value><boolean>")
+        write(value and "1" or "0")
+        write("</boolean></value>\n")
+    dispatch[bool] = dump_bool
 
     def dump_double(self, value, write):
         write("<value><double>")
