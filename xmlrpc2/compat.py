@@ -20,11 +20,13 @@ is_py3 = (_ver[0] == 3)
 if is_py2:
     import base64
     import httplib
-    import urllib as urllib_parse
+    import urllib as _urllib
+    import urlparse as urllib_parse
 
     base64.encodebytes = base64.encodestring
     base64.decodebytes = base64.decodestring
 
+    urllib_parse.splituser = _urllib.splituser
     urllib_parse.unquote_to_bytes = urllib_parse.unquote
 
     bytes = str

@@ -19,6 +19,7 @@ except ImportError:
 
 from . import __version__
 from .constants import MAXINT, MININT
+from .exceptions import UnsupportedScheme
 from .exceptions import ProtocolError, ResponseError, Fault
 
 
@@ -1176,42 +1177,48 @@ class Client(object):
     the given encoding.
     """
 
+    _supported_schemes = set(["http", "https"])
+
     def __init__(self, uri, transport=None, encoding=None, verbose=False, allow_none=False, use_datetime=False, *args, **kwargs):
         super(Client, self).__init__(*args, **kwargs)
 
-        # get the url
-        type, uri = urllib_parse.splittype(uri)
-        if type not in ("http", "https"):
-            raise IOError("unsupported XML-RPC protocol")
-        self.__host, self.__handler = urllib_parse.splithost(uri)
-        if not self.__handler:
-            self.__handler = "/RPC2"
+        parsed = urllib_parse.urlparse(uri)
+
+        if not parsed.scheme in self._supported_schemes:
+            msg = "%s is not a support scheme. Must be one of (%s)"
+            msg = msg % (parsed.scheme, ",".join(self._supported_schemes))
+
+            raise UnsupportedScheme(msg)
+
+        self._host = parsed.netloc
+        self._handler = parsed.path if parsed.path else "/RPC2"
 
         if transport is None:
             if type == "https":
                 transport = SafeTransport(use_datetime=use_datetime)
             else:
                 transport = Transport(use_datetime=use_datetime)
-        self.__transport = transport
 
-        self.__encoding = encoding or 'utf-8'
-        self.__verbose = verbose
-        self.__allow_none = allow_none
+        self._transport = transport
 
-    def __close(self):
-        self.__transport.close()
+        self._encoding = encoding if encoding is not None else "utf-8"
+        self._verbose = verbose
+        self._allow_none = allow_none
 
-    def __request(self, methodname, params):
+    def _close(self):
+        self._transport.close()
+
+    def _request(self, methodname, params):
         # call a method on the remote server
 
-        request = dumps(params, methodname, encoding=self.__encoding,
-                        allow_none=self.__allow_none).encode(self.__encoding)
+        request = dumps(params, methodname, encoding=self._encoding,
+                        allow_none=self._allow_none).encode(self._encoding)
 
-        response = self.__transport.request(
-            self.__host,
-            self.__handler,
+        response = self._transport.request(
+            self._host,
+            self._handler,
             request,
-            verbose=self.__verbose
+            verbose=self._verbose
             )
 
         if len(response) == 1:
@@ -1222,14 +1229,14 @@ class Client(object):
     def __repr__(self):
         return (
             "<ServerProxy for %s%s>" %
-            (self.__host, self.__handler)
+            (self._host, self._handler)
             )
 
     __str__ = __repr__
 
     def __getattr__(self, name):
         # magic method dispatcher
-        return _Method(self.__request, name)
+        return _Method(self._request, name)
 
     # note: to call a remote object with an non-standard name, use
     # result getattr(server, "strange-python-name")(args)
@@ -1239,7 +1246,7 @@ class Client(object):
            without interfering with the magic __getattr__
         """
         if attr == "close":
-            return self.__close
+            return self._close
         elif attr == "transport":
-            return self.__transport
+            return self._transport
         raise AttributeError("Attribute %r not found" % (attr,))
