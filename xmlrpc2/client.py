@@ -48,96 +48,6 @@ def _strftime(value):
     return "%04d%02d%02dT%02d:%02d:%02d" % value[:6]
 
 
-class DateTime:
-    """DateTime wrapper for an ISO 8601 string or time tuple or
-    localtime integer value to generate 'dateTime.iso8601' XML-RPC
-    value.
-    """
-
-    def __init__(self, value=0):
-        if isinstance(value, basestring):
-            self.value = value
-        else:
-            self.value = _strftime(value)
-
-    def make_comparable(self, other):
-        if isinstance(other, DateTime):
-            s = self.value
-            o = other.value
-        elif isinstance(other, datetime.datetime):
-            s = self.value
-            o = other.strftime("%Y%m%dT%H:%M:%S")
-        elif isinstance(other, str):
-            s = self.value
-            o = other
-        elif isinstance(other, bytes) and is_py2:
-            s = self.value
-            o = other
-        elif hasattr(other, "timetuple"):
-            s = self.timetuple()
-            o = other.timetuple()
-        else:
-            otype = (hasattr(other, "__class__")
-                     and other.__class__.__name__
-                     or type(other))
-            raise TypeError("Can't compare %s and %s" %
-                            (self.__class__.__name__, otype))
-        return s, o
-
-    def __lt__(self, other):
-        s, o = self.make_comparable(other)
-        return s < o
-
-    def __le__(self, other):
-        s, o = self.make_comparable(other)
-        return s <= o
-
-    def __gt__(self, other):
-        s, o = self.make_comparable(other)
-        return s > o
-
-    def __ge__(self, other):
-        s, o = self.make_comparable(other)
-        return s >= o
-
-    def __eq__(self, other):
-        s, o = self.make_comparable(other)
-        return s == o
-
-    def __ne__(self, other):
-        s, o = self.make_comparable(other)
-        return s != o
-
-    def timetuple(self):
-        return time.strptime(self.value, "%Y%m%dT%H:%M:%S")
-
-    ##
-    # Get date/time value.
-    #
-    # @return Date/time value, as an ISO 8601 string.
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return "<DateTime %r at %x>" % (self.value, id(self))
-
-    def decode(self, data):
-        self.value = str(data).strip()
-
-    def encode(self, out):
-        out.write("<value><dateTime.iso8601>")
-        out.write(self.value)
-        out.write("</dateTime.iso8601></value>\n")
-
-
-def _datetime(data):
-    # decode xml element contents into a DateTime structure.
-    value = DateTime()
-    value.decode(data)
-    return value
-
-
 def _datetime_type(data):
     t = time.strptime(data, "%Y%m%dT%H:%M:%S")
     return datetime.datetime(*tuple(t)[:6])
@@ -197,7 +107,7 @@ def _binary(data):
     value.decode(data)
     return value
 
-WRAPPERS = (DateTime, Binary)
+WRAPPERS = (Binary,)
 
 # --------------------------------------------------------------------
 # XML parsers
@@ -393,7 +303,6 @@ class Marshaller:
         else:
             # store instance attributes as a struct (really?)
             self.dump_struct(value.__dict__, write)
-    dispatch[DateTime] = dump_instance
     dispatch[Binary] = dump_instance
     # XXX(twouters): using "_arbitrary_instance" as key as a quick-fix
     # for the p3yk merge, this should probably be fixed more neatly.
@@ -417,7 +326,7 @@ class Unmarshaller:
     # and again, if you don't understand what's going on in here,
     # that's perfectly ok.
 
-    def __init__(self, use_datetime=False):
+    def __init__(self, use_datetime=True):
         self._type = None
         self._stack = []
         self._marks = []
@@ -544,10 +453,8 @@ class Unmarshaller:
     dispatch["base64"] = end_base64
 
     def end_dateTime(self, data):
-        value = DateTime()
-        value.decode(data)
         if self._use_datetime:
-            value = _datetime_type(data)
+            value = _datetime_type(data.strip())
         self.append(value)
     dispatch["dateTime.iso8601"] = end_dateTime
 
@@ -656,7 +563,7 @@ FastMarshaller = FastParser = FastUnmarshaller = None
 # return A (parser, unmarshaller) tuple.
 
 
-def getparser(use_datetime=False):
+def getparser(use_datetime=True):
     """getparser() -> parser, unmarshaller
 
     Create an instance of the fastest available parser, and attach it
@@ -771,7 +678,7 @@ def dumps(params, methodname=None, methodresponse=None, encoding=None,
 # @see Fault
 
 
-def loads(data, use_datetime=False):
+def loads(data, use_datetime=True):
     """data -> unmarshalled data, method name
 
     Convert an XML-RPC packet to unmarshalled data plus a method
