@@ -165,6 +165,7 @@ def test_get_host_info():
     assert transp.get_host_info("user@host.tld") == ("host.tld", [("Authorization", "Basic dXNlcg==")], {})
 
 
+@pytest.mark.skipif("sys.version_info < (3,0)")
 def test_dump_bytes():
     with pytest.raises(TypeError):
         xmlrpc2.client.dumps((b"my dog has fleas",))
