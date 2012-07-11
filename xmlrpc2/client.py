@@ -6,13 +6,7 @@ import cgi
 import datetime
 import time
 
-from io import BytesIO
 from xml.parsers import expat
-
-try:
-    import gzip
-except ImportError:
-    gzip = None  # python can be built without zlib/gzip support
 
 
 import requests
@@ -790,81 +784,6 @@ def loads(data, use_datetime=False):
     p.feed(data)
     p.close()
     return u.close(), u.getmethodname()
-
-##
-# Encode a string using the gzip content encoding such as specified by the
-# Content-Encoding: gzip
-# in the HTTP header, as described in RFC 1952
-#
-# @param data the unencoded data
-# @return the encoded data
-
-
-def gzip_encode(data):
-    """data -> gzip encoded data
-
-    Encode data using the gzip content encoding as described in RFC 1952
-    """
-    if not gzip:
-        raise NotImplementedError
-    f = BytesIO()
-    gzf = gzip.GzipFile(mode="wb", fileobj=f, compresslevel=1)
-    gzf.write(data)
-    gzf.close()
-    encoded = f.getvalue()
-    f.close()
-    return encoded
-
-##
-# Decode a string using the gzip content encoding such as specified by the
-# Content-Encoding: gzip
-# in the HTTP header, as described in RFC 1952
-#
-# @param data The encoded data
-# @return the unencoded data
-# @raises ValueError if data is not correctly coded.
-
-
-def gzip_decode(data):
-    """gzip encoded data -> unencoded data
-
-    Decode data using the gzip content encoding as described in RFC 1952
-    """
-    if not gzip:
-        raise NotImplementedError
-    f = BytesIO(data)
-    gzf = gzip.GzipFile(mode="rb", fileobj=f)
-    try:
-        decoded = gzf.read()
-    except IOError:
-        raise ValueError("invalid data")
-    f.close()
-    gzf.close()
-    return decoded
-
-##
-# Return a decoded file-like object for the gzip encoding
-# as described in RFC 1952.
-#
-# @param response A stream supporting a read() method
-# @return a file-like object that the decoded data can be read() from
-
-
-class GzipDecodedResponse(gzip.GzipFile if gzip else object):
-    """a file-like object to decode a response encoded with the gzip
-    method, as described in RFC 1952.
-    """
-    def __init__(self, response):
-        #response doesn't support tell() and read(), required by
-        #GzipFile
-        if not gzip:
-            raise NotImplementedError
-        self.io = BytesIO(response.read())
-        gzip.GzipFile.__init__(self, mode="rb", fileobj=self.io)
-
-    def close(self):
-        gzip.GzipFile.close(self)
-        self.io.close()
 
 
 # --------------------------------------------------------------------
