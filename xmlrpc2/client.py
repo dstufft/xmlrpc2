@@ -4,10 +4,11 @@ from xml.parsers import expat
 import socket
 import errno
 from io import BytesIO
+
 try:
     import gzip
 except ImportError:
-    gzip = None #python can be built without zlib/gzip support
+    gzip = None  # python can be built without zlib/gzip support
 
 
 from .compat import is_py2
@@ -22,6 +23,7 @@ try:
 except ImportError:
     datetime = None
 
+
 def escape(s):
     s = s.replace("&", "&amp;")
     s = s.replace("<", "&lt;")
@@ -30,34 +32,35 @@ def escape(s):
 __version__ = "1.0.1"
 
 # xmlrpc integer limits
-MAXINT =  2**31-1
-MININT = -2**31
+MAXINT = 2 ** 31 - 1
+MININT = -2 ** 31
 
 # --------------------------------------------------------------------
 # Error constants (from Dan Libby's specification at
 # http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php)
 
 # Ranges of errors
-PARSE_ERROR       = -32700
-SERVER_ERROR      = -32600
+PARSE_ERROR = -32700
+SERVER_ERROR = -32600
 APPLICATION_ERROR = -32500
-SYSTEM_ERROR      = -32400
-TRANSPORT_ERROR   = -32300
+SYSTEM_ERROR = -32400
+TRANSPORT_ERROR = -32300
 
 # Specific errors
-NOT_WELLFORMED_ERROR  = -32700
-UNSUPPORTED_ENCODING  = -32701
+NOT_WELLFORMED_ERROR = -32700
+UNSUPPORTED_ENCODING = -32701
 INVALID_ENCODING_CHAR = -32702
-INVALID_XMLRPC        = -32600
-METHOD_NOT_FOUND      = -32601
+INVALID_XMLRPC = -32600
+METHOD_NOT_FOUND = -32601
 INVALID_METHOD_PARAMS = -32602
-INTERNAL_ERROR        = -32603
+INTERNAL_ERROR = -32603
 
 # --------------------------------------------------------------------
 # Exceptions
 
 ##
 # Base class for all kinds of client-side errors.
+
 
 class Error(Exception):
     """Base class for client errors."""
@@ -74,6 +77,7 @@ class Error(Exception):
 # @param errmsg The HTTP error message.
 # @param headers The HTTP header dictionary.
 
+
 class ProtocolError(Error):
     """Indicates an HTTP protocol error."""
     def __init__(self, url, errcode, errmsg, headers):
@@ -82,6 +86,7 @@ class ProtocolError(Error):
         self.errcode = errcode
         self.errmsg = errmsg
         self.headers = headers
+
     def __repr__(self):
         return (
             "<ProtocolError for %s: %s %s>" %
@@ -92,6 +97,7 @@ class ProtocolError(Error):
 # Indicates a broken XML-RPC response package.  This exception is
 # raised by the unmarshalling layer, if the XML-RPC response is
 # malformed.
+
 
 class ResponseError(Error):
     """Indicates a broken response package."""
@@ -106,12 +112,14 @@ class ResponseError(Error):
 # @param faultCode The XML-RPC fault code.
 # @param faultString The XML-RPC fault string.
 
+
 class Fault(Error):
     """Indicates an XML-RPC fault package."""
     def __init__(self, faultCode, faultString, **extra):
         Error.__init__(self)
         self.faultCode = faultCode
         self.faultString = faultString
+
     def __repr__(self):
         return "<Fault %s: %r>" % (self.faultCode, self.faultString)
 
@@ -136,6 +144,7 @@ boolean = Boolean = bool
 # @param value The time, given as an ISO 8601 string, a time
 #              tuple, or a integer time value.
 
+
 def _strftime(value):
     if datetime:
         if isinstance(value, datetime.datetime):
@@ -149,6 +158,7 @@ def _strftime(value):
         value = time.localtime(value)
 
     return "%04d%02d%02dT%02d:%02d:%02d" % value[:6]
+
 
 class DateTime:
     """DateTime wrapper for an ISO 8601 string or time tuple or
@@ -232,11 +242,13 @@ class DateTime:
         out.write(self.value)
         out.write("</dateTime.iso8601></value>\n")
 
+
 def _datetime(data):
     # decode xml element contents into a DateTime structure.
     value = DateTime()
     value.decode(data)
     return value
+
 
 def _datetime_type(data):
     t = time.strptime(data, "%Y%m%dT%H:%M:%S")
@@ -247,6 +259,7 @@ def _datetime_type(data):
 # of binary data over XML-RPC, using BASE64 encoding.
 #
 # @param data An 8-bit string containing arbitrary data.
+
 
 class Binary:
     """Wrapper for binary data."""
@@ -289,6 +302,7 @@ class Binary:
         out.write('\n')
         out.write("</base64></value>\n")
 
+
 def _binary(data):
     # decode xml element contents into a Binary structure
     value = Binary()
@@ -299,6 +313,7 @@ WRAPPERS = (DateTime, Binary)
 
 # --------------------------------------------------------------------
 # XML parsers
+
 
 class ExpatParser:
     # fast expat parser for Python 2.0 and later.
@@ -315,8 +330,8 @@ class ExpatParser:
         self._parser.Parse(data, 0)
 
     def close(self):
-        self._parser.Parse("", 1) # end of data
-        del self._target, self._parser # get rid of circular references
+        self._parser.Parse("", 1)  # end of data
+        del self._target, self._parser  # get rid of circular references
 
 # --------------------------------------------------------------------
 # XML-RPC marshalling and unmarshalling code
@@ -327,6 +342,7 @@ class ExpatParser:
 # @param encoding Default encoding for 8-bit strings.  The default
 #     value is None (interpreted as UTF-8).
 # @see dumps
+
 
 class Marshaller:
     """Generate an XML-RPC params chunk from a Python data structure.
@@ -394,7 +410,7 @@ class Marshaller:
             f = self.dispatch["_arbitrary_instance"]
         f(self, value, write)
 
-    def dump_nil (self, value, write):
+    def dump_nil(self, value, write):
         if not self.allow_none:
             raise TypeError("cannot marshal None unless allow_none is enabled")
         write("<value><nil/></value>")
@@ -501,6 +517,7 @@ class Marshaller:
 #
 # @see loads
 
+
 class Unmarshaller:
     """Unmarshal an XML-RPC response, based on incoming XML event
     messages (start, data, end).  Call close() to get the resulting
@@ -558,7 +575,7 @@ class Unmarshaller:
         try:
             f = self.dispatch[tag]
         except KeyError:
-            pass # unknown tag ?
+            pass  # unknown tag ?
         else:
             return f(self, "".join(self._data))
 
@@ -570,7 +587,7 @@ class Unmarshaller:
         try:
             f = self.dispatch[tag]
         except KeyError:
-            pass # unknown tag ?
+            pass  # unknown tag ?
         else:
             return f(self, data)
 
@@ -579,7 +596,7 @@ class Unmarshaller:
 
     dispatch = {}
 
-    def end_nil (self, data):
+    def end_nil(self, data):
         self.append(None)
         self._value = 0
     dispatch["nil"] = end_nil
@@ -612,7 +629,7 @@ class Unmarshaller:
         self.append(data)
         self._value = 0
     dispatch["string"] = end_string
-    dispatch["name"] = end_string # struct keys are always strings
+    dispatch["name"] = end_string  # struct keys are always strings
 
     def end_array(self, data):
         mark = self._marks.pop()
@@ -627,7 +644,7 @@ class Unmarshaller:
         dict = {}
         items = self._stack[mark:]
         for i in range(0, len(items), 2):
-            dict[items[i]] = items[i+1]
+            dict[items[i]] = items[i + 1]
         self._stack[mark:] = [dict]
         self._value = 0
     dispatch["struct"] = end_struct
@@ -666,11 +683,12 @@ class Unmarshaller:
         if self._encoding:
             data = data.decode(self._encoding)
         self._methodname = data
-        self._type = "methodName" # no params
+        self._type = "methodName"  # no params
     dispatch["methodName"] = end_methodName
 
 ## Multicall support
 #
+
 
 class _MultiCallMethod:
     # some lesser magic to store calls made to a MultiCall object
@@ -678,10 +696,13 @@ class _MultiCallMethod:
     def __init__(self, call_list, name):
         self.__call_list = call_list
         self.__name = name
+
     def __getattr__(self, name):
         return _MultiCallMethod(self.__call_list, "%s.%s" % (self.__name, name))
+
     def __call__(self, *args):
         self.__call_list.append((self.__name, args))
+
 
 class MultiCallIterator:
     """Iterates over the results of a multicall. Exceptions are
@@ -698,6 +719,7 @@ class MultiCallIterator:
             return item[0]
         else:
             raise ValueError("unexpected type in multicall result")
+
 
 class MultiCall:
     """server -> a object used to boxcar method calls
@@ -731,7 +753,7 @@ class MultiCall:
     def __call__(self):
         marshalled_list = []
         for name, args in self.__call_list:
-            marshalled_list.append({'methodName' : name, 'params' : args})
+            marshalled_list.append({'methodName': name, 'params': args})
 
         return MultiCallIterator(self.__server.system.multicall(marshalled_list))
 
@@ -745,6 +767,7 @@ FastMarshaller = FastParser = FastUnmarshaller = None
 # This function picks the fastest available XML parser.
 #
 # return A (parser, unmarshaller) tuple.
+
 
 def getparser(use_datetime=False):
     """getparser() -> parser, unmarshaller
@@ -781,6 +804,7 @@ def getparser(use_datetime=False):
 #     it must contain exactly one element).
 # @keyparam encoding The packet encoding.
 # @return A string containing marshalled data.
+
 
 def dumps(params, methodname=None, methodresponse=None, encoding=None,
           allow_none=False):
@@ -824,7 +848,7 @@ def dumps(params, methodname=None, methodresponse=None, encoding=None,
     if encoding != "utf-8":
         xmlheader = "<?xml version='1.0' encoding='%s'?>\n" % str(encoding)
     else:
-        xmlheader = "<?xml version='1.0'?>\n" # utf-8 is default
+        xmlheader = "<?xml version='1.0'?>\n"  # utf-8 is default
 
     # standard XML-RPC wrappings
     if methodname:
@@ -847,7 +871,7 @@ def dumps(params, methodname=None, methodresponse=None, encoding=None,
             "</methodResponse>\n"
             )
     else:
-        return data # return as is
+        return data  # return as is
     return "".join(data)
 
 ##
@@ -858,6 +882,7 @@ def dumps(params, methodname=None, methodresponse=None, encoding=None,
 # @return A tuple containing the unpacked data, and the method name
 #     (None if not present).
 # @see Fault
+
 
 def loads(data, use_datetime=False):
     """data -> unmarshalled data, method name
@@ -880,6 +905,7 @@ def loads(data, use_datetime=False):
 #
 # @param data the unencoded data
 # @return the encoded data
+
 
 def gzip_encode(data):
     """data -> gzip encoded data
@@ -905,6 +931,7 @@ def gzip_encode(data):
 # @return the unencoded data
 # @raises ValueError if data is not correctly coded.
 
+
 def gzip_decode(data):
     """gzip encoded data -> unencoded data
 
@@ -928,6 +955,7 @@ def gzip_decode(data):
 #
 # @param response A stream supporting a read() method
 # @return a file-like object that the decoded data can be read() from
+
 
 class GzipDecodedResponse(gzip.GzipFile if gzip else object):
     """a file-like object to decode a response encoded with the gzip
@@ -955,8 +983,10 @@ class _Method:
     def __init__(self, send, name):
         self.__send = send
         self.__name = name
+
     def __getattr__(self, name):
         return _Method(self.__send, "%s.%s" % (self.__name, name))
+
     def __call__(self, *args):
         return self.__send(self.__name, args)
 
@@ -965,6 +995,7 @@ class _Method:
 # <p>
 # You can create custom transports by subclassing this method, and
 # overriding selected methods.
+
 
 class Transport:
     """Handles an HTTP transaction to an XML-RPC server."""
@@ -978,7 +1009,7 @@ class Transport:
     # if positive, encode request using gzip if it exceeds this threshold
     # note that many server will get confused, so only use it if you know
     # that they can decode such a request
-    encode_threshold = None #None = don't encode
+    encode_threshold = None  # None = don't encode
 
     def __init__(self, use_datetime=False):
         self._use_datetime = use_datetime
@@ -1003,7 +1034,7 @@ class Transport:
             except socket.error as e:
                 if i or e.errno not in (errno.ECONNRESET, errno.ECONNABORTED, errno.EPIPE):
                     raise
-            except httplib.BadStatusLine: #close after we sent request
+            except httplib.BadStatusLine:  # close after we sent request
                 if i:
                     raise
 
@@ -1033,7 +1064,6 @@ class Transport:
             resp.status, resp.reason,
             dict(resp.getheaders())
             )
-
 
     ##
     # Create parser.
@@ -1065,7 +1095,7 @@ class Transport:
         if auth:
             auth = urllib_parse.unquote_to_bytes(auth)
             auth = base64.encodebytes(auth).decode("utf-8")
-            auth = "".join(auth.split()) # get rid of whitespace
+            auth = "".join(auth.split())  # get rid of whitespace
             extra_headers = [
                 ("Authorization", "Basic " + auth)
                 ]
@@ -1192,6 +1222,7 @@ class Transport:
 ##
 # Standard transport class for XML-RPC over HTTPS.
 
+
 class SafeTransport(Transport):
     """Handles an HTTPS transaction to an XML-RPC server."""
 
@@ -1227,6 +1258,7 @@ class SafeTransport(Transport):
 # @keyparam verbose Use a true value to enable debugging output.
 #    (printed to standard output).
 # @see Transport
+
 
 class ServerProxy:
     """uri [,options] -> a logical connection to an XML-RPC server
