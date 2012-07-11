@@ -1,7 +1,3 @@
-##
-# Base class for all kinds of client-side errors.
-
-
 class XMLRPCException(Exception):
     """Base class for client errors."""
     def __str__(self):
