@@ -1218,8 +1218,6 @@ class Client(UnicodeMixin, object):
         self._transport.close()
 
     def _request(self, methodname, params):
-        # call a method on the remote server
-
         request = dumps(params, methodname, encoding=self._encoding,
                         allow_none=self._allow_none).encode(self._encoding)
 
