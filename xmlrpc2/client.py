@@ -42,7 +42,6 @@ Exported functions:
 
 import base64
 import time
-import http.client
 from xml.parsers import expat
 import socket
 import errno
@@ -51,6 +50,10 @@ try:
     import gzip
 except ImportError:
     gzip = None #python can be built without zlib/gzip support
+
+
+from .compat import http
+
 
 # --------------------------------------------------------------------
 # Internal stuff
