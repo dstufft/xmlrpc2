@@ -5,5 +5,9 @@ python:
   - 3.2
 script: py.test
 install:
-  - pip install pytest
-  - pip install .
+  - pip install "file://$PWD#egg=xmlrpc2[$EXTRAS]"
+env:
+  - EXTRAS="test,lxml,pytz"
+  - EXTRAS="test,lxml"
+  - EXTRAS="test,pytz"
+  - EXTRAS="test"
