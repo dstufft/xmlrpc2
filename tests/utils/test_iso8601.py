@@ -3,8 +3,9 @@ import pytest
 from xmlrpc2.utils import iso8601
 
 
-def test_iso8601_regex():
-    assert iso8601.ISO8601_REGEX.match("2006-10-11T00:14:33Z")
+@pytest.mark.parametrize("input", ["2006-10-11T00:14:33Z", "20061011T00:14:33Z"])
+def test_iso8601_regex(input):
+    assert iso8601.ISO8601_REGEX.match(input)
 
 
 def test_timezone_regex():
@@ -14,8 +15,9 @@ def test_timezone_regex():
     assert iso8601.TIMEZONE_REGEX.match("-01:00")
 
 
-def test_parse_date():
-    d = iso8601.parse("2006-10-20T15:34:56Z")
+@pytest.mark.parametrize("input", ["2006-10-20T15:34:56Z", "20061020T15:34:56Z"])
+def test_parse_date(input):
+    d = iso8601.parse(input)
 
     assert d.year == 2006
     assert d.month == 10
@@ -26,8 +28,9 @@ def test_parse_date():
     assert d.tzinfo == iso8601.UTC
 
 
-def test_parse_date_fraction():
-    d = iso8601.parse("2006-10-20T15:34:56.123Z")
+@pytest.mark.parametrize("input", ["2006-10-20T15:34:56.123Z", "20061020T15:34:56.123Z"])
+def test_parse_date_fraction(input):
+    d = iso8601.parse(input)
 
     assert d.year == 2006
     assert d.month == 10
@@ -39,11 +42,9 @@ def test_parse_date_fraction():
     assert d.tzinfo == iso8601.UTC
 
 
-def test_parse_date_fraction_2():
-    """From bug 6
-
-    """
-    d = iso8601.parse("2007-5-7T11:43:55.328Z'")
+@pytest.mark.parametrize("input", ["2007-5-7T11:43:55.328Z'"])
+def test_parse_date_fraction_2(input):
+    d = iso8601.parse(input)
 
     assert d.year == 2007
     assert d.month == 5
@@ -55,8 +56,9 @@ def test_parse_date_fraction_2():
     assert d.tzinfo == iso8601.UTC
 
 
-def test_parse_date_tz():
-    d = iso8601.parse("2006-10-20T15:34:56.123+02:30")
+@pytest.mark.parametrize("input", ["2006-10-20T15:34:56.123+02:30", "20061020T15:34:56.123+02:30"])
+def test_parse_date_tz(input):
+    d = iso8601.parse(input)
 
     assert d.year == 2006
     assert d.month == 10
@@ -83,13 +85,14 @@ def test_parse_invalid_date2():
         iso8601.parse("23")
 
 
-def test_parse_no_timezone():
+@pytest.mark.parametrize("input", ["2007-01-01T08:00:00", "20070101T08:00:00"])
+def test_parse_no_timezone(input):
     """
     This tests what happens when you parse a date with no timezone. While not
     strictly correct this is quite common. I'll assume UTC for the time zone
     in this case.
     """
-    d = iso8601.parse("2007-01-01T08:00:00")
+    d = iso8601.parse(input)
 
     assert d.year == 2007
     assert d.month == 1
@@ -101,9 +104,10 @@ def test_parse_no_timezone():
     assert d.tzinfo == iso8601.UTC
 
 
-def test_parse_no_timezone_different_default():
+@pytest.mark.parametrize("input", ["2007-01-01T08:00:00", "20070101T08:00:00"])
+def test_parse_no_timezone_different_default(input):
     tz = iso8601.FixedOffset(2, 0, "test offset")
-    d = iso8601.parse("2007-01-01T08:00:00", default_timezone=tz)
+    d = iso8601.parse(input, default_timezone=tz)
 
     assert d.tzinfo == tz
 
