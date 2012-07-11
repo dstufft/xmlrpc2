@@ -7,14 +7,12 @@ import datetime
 
 from xml.parsers import expat
 
-
 import requests
-
 
 from .constants import MAXINT, MININT
 from .exceptions import ProtocolError, ResponseError, Fault
+from .serializer import Serializer
 from .utils import iso8601
-
 
 from .compat import is_py2
 from .compat import UnicodeMixin, basestring, bytes, str
@@ -651,6 +649,7 @@ def loads(data):
     return u.close(), u.getmethodname()
 
 
+
 class Method(object):
     # some magic to bind an XML-RPC method to an RPC server.
     # supports "nested" methods (e.g. examples.getStateName)
@@ -694,8 +693,8 @@ class Client(UnicodeMixin, object):
     def __repr__(self):
         return self.__str__()
 
-    def _request(self, methodname, params):
-        body = dumps(params, methodname, encoding=self._encoding, allow_none=self._allow_none).encode(self._encoding)
+    def _request(self, method, params):
+        body = self._dumps(method, params).encode(self._encoding)
 
         response = self._session.post(self._uri, body)
         response.raise_for_status()
@@ -706,3 +705,7 @@ class Client(UnicodeMixin, object):
             result = result[0]
 
         return result
+
+    def _dumps(self, method, arguments):
+        s = Serializer(encoding=self._encoding, allow_none=self._allow_none)
+        return s.dumps(method, arguments)

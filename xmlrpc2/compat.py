@@ -27,12 +27,16 @@ if is_py2:
     str = unicode
     basestring = basestring
 
+    long = long
+
     class UnicodeMixin(object):
         __str__ = lambda x: unicode(x).encode("utf-8")
 elif is_py3:
     str = str
     bytes = bytes
     basestring = (str, bytes)
+
+    long = int
 
     class UnicodeMixin(object):
         __str__ = lambda x: x.__unicode__()
