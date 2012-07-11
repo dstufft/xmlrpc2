@@ -23,6 +23,8 @@ if is_py2:
     base64.encodebytes = base64.encodestring
     base64.decodebytes = base64.decodestring
 
+    urllib_parse.unquote_to_bytes = urllib_parse.unquote
+
     bytes = str
     str = unicode
     basestring = basestring
