@@ -1193,7 +1193,10 @@ class Transport:
             request_body = gzip_encode(request_body)
 
         connection.putheader("Content-Length", str(len(request_body)))
-        connection.endheaders(request_body)
+        connection.endheaders()
+
+        if request_body:
+            connection.send(request_body)
 
     ##
     # Parse response.
