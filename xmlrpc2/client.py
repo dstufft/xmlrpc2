@@ -889,27 +889,6 @@ class _Method:
 
 
 class Client(UnicodeMixin, object):
-    """
-    uri [,options] -> a logical connection to an XML-RPC server
-
-    uri is the connection point on the server, given as
-    scheme://host/target.
-
-    The standard implementation always supports the "http" scheme.  If
-    SSL socket support is available (Python 2.0), it also supports
-    "https".
-
-    If the target part and the slash preceding it are both omitted,
-    "/RPC2" is assumed.
-
-    The following options can be given as keyword arguments:
-
-        transport: a transport factory
-        encoding: the request encoding (default is UTF-8)
-
-    All 8-bit strings passed to the server proxy are assumed to use
-    the given encoding.
-    """
 
     def __init__(self, uri, session=None, encoding=None, allow_none=False, *args, **kwargs):
         super(Client, self).__init__(*args, **kwargs)
