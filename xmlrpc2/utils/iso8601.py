@@ -24,7 +24,7 @@ from __future__ import division
 from datetime import datetime, timedelta, tzinfo
 import re
 
-__all__ = ["parse_date", "ParseError"]
+__all__ = ["parse", "ParseError"]
 
 # Adapted from http://delete.me.uk/2005/03/iso8601.html
 ISO8601_REGEX = re.compile(r"(?P<year>[0-9]{4})(-(?P<month>[0-9]{1,2})(-(?P<day>[0-9]{1,2})"
@@ -99,7 +99,7 @@ def parse_timezone(tzstring, default_timezone=UTC):
     return FixedOffset(hours, minutes, tzstring)
 
 
-def parse_date(datestring, default_timezone=UTC):
+def parse(datestring, default_timezone=UTC):
     """Parses ISO 8601 dates into datetime objects
 
     The timezone is parsed from the date string. However it is quite common to

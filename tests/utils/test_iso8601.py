@@ -15,7 +15,7 @@ def test_timezone_regex():
 
 
 def test_parse_date():
-    d = iso8601.parse_date("2006-10-20T15:34:56Z")
+    d = iso8601.parse("2006-10-20T15:34:56Z")
 
     assert d.year == 2006
     assert d.month == 10
@@ -27,7 +27,7 @@ def test_parse_date():
 
 
 def test_parse_date_fraction():
-    d = iso8601.parse_date("2006-10-20T15:34:56.123Z")
+    d = iso8601.parse("2006-10-20T15:34:56.123Z")
 
     assert d.year == 2006
     assert d.month == 10
@@ -43,7 +43,7 @@ def test_parse_date_fraction_2():
     """From bug 6
 
     """
-    d = iso8601.parse_date("2007-5-7T11:43:55.328Z'")
+    d = iso8601.parse("2007-5-7T11:43:55.328Z'")
 
     assert d.year == 2007
     assert d.month == 5
@@ -56,7 +56,7 @@ def test_parse_date_fraction_2():
 
 
 def test_parse_date_tz():
-    d = iso8601.parse_date("2006-10-20T15:34:56.123+02:30")
+    d = iso8601.parse("2006-10-20T15:34:56.123+02:30")
 
     assert d.year == 2006
     assert d.month == 10
@@ -75,12 +75,12 @@ def test_parse_date_tz():
 
 def test_parse_invalid_date():
     with pytest.raises(iso8601.ParseError):
-        iso8601.parse_date(None)
+        iso8601.parse(None)
 
 
 def test_parse_invalid_date2():
     with pytest.raises(iso8601.ParseError):
-        iso8601.parse_date("23")
+        iso8601.parse("23")
 
 
 def test_parse_no_timezone():
@@ -89,7 +89,7 @@ def test_parse_no_timezone():
     strictly correct this is quite common. I'll assume UTC for the time zone
     in this case.
     """
-    d = iso8601.parse_date("2007-01-01T08:00:00")
+    d = iso8601.parse("2007-01-01T08:00:00")
 
     assert d.year == 2007
     assert d.month == 1
@@ -103,7 +103,7 @@ def test_parse_no_timezone():
 
 def test_parse_no_timezone_different_default():
     tz = iso8601.FixedOffset(2, 0, "test offset")
-    d = iso8601.parse_date("2007-01-01T08:00:00", default_timezone=tz)
+    d = iso8601.parse("2007-01-01T08:00:00", default_timezone=tz)
 
     assert d.tzinfo == tz
 
@@ -112,7 +112,7 @@ def test_space_separator():
     """
     Handle a separator other than T
     """
-    d = iso8601.parse_date("2007-06-23 06:40:34.00Z")
+    d = iso8601.parse("2007-06-23 06:40:34.00Z")
 
     assert d.year == 2007
     assert d.month == 6
