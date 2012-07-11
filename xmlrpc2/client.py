@@ -1198,7 +1198,7 @@ class Client(UnicodeMixin, object):
         self._allow_none = allow_none
 
         if transport is None:
-            if type == "https":
+            if self._scheme == "https":
                 transport = SafeTransport(use_datetime=True)
             else:
                 transport = Transport(use_datetime=True)
