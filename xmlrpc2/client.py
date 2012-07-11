@@ -22,33 +22,6 @@ from .compat import UnicodeMixin, basestring, bytes, str
 
 
 ##
-# Wrapper for XML-RPC DateTime values.  This converts a time value to
-# the format used by XML-RPC.
-# <p>
-# The value can be given as a string in the format
-# "yyyymmddThh:mm:ss", as a 9-item time tuple (as returned by
-# time.localtime()), or an integer value (as returned by time.time()).
-# The wrapper uses time.localtime() to convert an integer to a time
-# tuple.
-#
-# @param value The time, given as an ISO 8601 string, a time
-#              tuple, or a integer time value.
-
-
-def _strftime(value):
-    if isinstance(value, datetime.datetime):
-        return "%04d%02d%02dT%02d:%02d:%02d" % (
-            value.year, value.month, value.day,
-            value.hour, value.minute, value.second)
-
-    if not isinstance(value, (tuple, time.struct_time)):
-        if value == 0:
-            value = time.time()
-        value = time.localtime(value)
-
-    return "%04d%02d%02dT%02d:%02d:%02d" % value[:6]
-
-##
 # Wrapper for binary data.  This can be used to transport any kind
 # of binary data over XML-RPC, using BASE64 encoding.
 #
@@ -286,7 +259,7 @@ class Marshaller:
 
     def dump_datetime(self, value, write):
         write("<value><dateTime.iso8601>")
-        write(_strftime(value))
+        write(value.isoformat())
         write("</dateTime.iso8601></value>\n")
     dispatch[datetime.datetime] = dump_datetime
 
