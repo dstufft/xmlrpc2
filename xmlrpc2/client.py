@@ -16,6 +16,7 @@ except ImportError:
     gzip = None  # python can be built without zlib/gzip support
 
 
+from . import __version__
 from .compat import is_py2
 from .compat import httplib, urllib_parse, basestring, bytes, str
 
@@ -29,7 +30,6 @@ def escape(s):
     s = s.replace("<", "&lt;")
     return s.replace(">", "&gt;",)
 
-__version__ = "1.0.1"
 
 # xmlrpc integer limits
 MAXINT = 2 ** 31 - 1
