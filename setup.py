@@ -12,7 +12,7 @@ setup(
     description="A port of xmlrpc from Python3 to Python 2.x using the Requests library",
     long_description=open("README.rst").read(),
     url="https://github.com/dstufft/xmlrpc2",
-    #license=open("LICENSE").read(),
+    license=open("LICENSE").read(),
 
     author="Donald Stufft",
     author_email="donald.stufft@gmail.com",
