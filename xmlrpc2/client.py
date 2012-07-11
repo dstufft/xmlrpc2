@@ -19,7 +19,7 @@ except ImportError:
 
 from . import __version__
 from .constants import MAXINT, MININT
-from .exceptions import Error, ProtocolError, ResponseError, Fault
+from .exceptions import ProtocolError, ResponseError, Fault
 
 
 from .compat import is_py2
