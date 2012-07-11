@@ -786,21 +786,22 @@ def loads(data, use_datetime=False):
     return u.close(), u.getmethodname()
 
 
-# --------------------------------------------------------------------
-# request dispatcher
-
-class _Method:
+class Method(object):
     # some magic to bind an XML-RPC method to an RPC server.
     # supports "nested" methods (e.g. examples.getStateName)
-    def __init__(self, send, name):
-        self.__send = send
-        self.__name = name
 
-    def __getattr__(self, name):
-        return _Method(self.__send, "%s.%s" % (self.__name, name))
+    def __init__(self, send, name):
+        self._send = send
+        self._name = name
+
+    def __getattr__(self, item):
+        if item.startswith("_"):
+            raise AttributeError(item)
+
+        return Method(self._send, "%s.%s" % (self._name, item))
 
     def __call__(self, *args):
-        return self.__send(self.__name, args)
+        return self._send(self._name, args)
 
 
 class Client(UnicodeMixin, object):
@@ -820,7 +821,7 @@ class Client(UnicodeMixin, object):
         if item.startswith("_"):
             raise AttributeError(item)
 
-        return _Method(self._request, item)
+        return Method(self._request, item)
 
     def __unicode__(self):
         return "<Client (%s)>" % self._uri
