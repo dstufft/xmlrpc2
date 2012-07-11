@@ -13,6 +13,7 @@ def test_repr():
     assert repr(f) == str(f)
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_dump_fault():
     f = xmlrpc2.client.Fault(42, "Test Fault")
     s = xmlrpc2.client.dumps((f,))

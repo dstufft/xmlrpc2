@@ -30,6 +30,7 @@ DUMMY_DATA = [
 ]
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_dump_load():
     dump = xmlrpc2.client.dumps((DUMMY_DATA,))
     load = xmlrpc2.client.loads(dump)
@@ -37,6 +38,7 @@ def test_dump_load():
     assert DUMMY_DATA == load[0][0]
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_dump_bare_datetime():
     # This checks that an unwrapped datetime.date object can be handled
     # by the marshalling code.  This can't be done via test_dump_load()
@@ -50,6 +52,7 @@ def test_dump_bare_datetime():
     assert m is None
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_datetime_before_1900():
     # same as before but with a date before 1900
     dt = datetime.datetime(1,  2, 10, 11, 41, 23, tzinfo=iso8601.utc)
@@ -60,6 +63,7 @@ def test_datetime_before_1900():
     assert m is None
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_newstyle_class():
     class T(object):
         pass
@@ -73,16 +77,19 @@ def test_newstyle_class():
     assert t2 == t.__dict__
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_dump_big_long():
     with pytest.raises(OverflowError):
         xmlrpc2.client.dumps((2 ** 99,))
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_dump_bad_dict():
     with pytest.raises(TypeError):
         xmlrpc2.client.dumps(({(1, 2, 3): 1},))
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_dump_recursive_seq():
     l = [1, 2, 3]
     t = [3, 4, 5, l]
@@ -93,6 +100,7 @@ def test_dump_recursive_seq():
         xmlrpc2.client.dumps((l,))
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_dump_recursive_dict():
     d = {"1": 1, "2": 1}
     t = {"3": 3, "d": d}
@@ -103,6 +111,7 @@ def test_dump_recursive_dict():
         xmlrpc2.client.dumps((d,))
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_dump_big_int():
     def _dummy_write(s):
         pass
@@ -130,6 +139,7 @@ def test_dump_big_int():
         m.dump_int(xmlrpc2.client.MININT - 1, _dummy_write)
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 def test_dump_none():
     value = DUMMY_DATA + [None]
     arg1 = (DUMMY_DATA + [None],)
@@ -142,6 +152,7 @@ def test_dump_none():
         xmlrpc2.client.dumps((arg1,))
 
 
+@pytest.mark.xfail(reason="Move to New Serialization framework")
 @pytest.mark.skipif("sys.version_info < (3,0)")
 def test_dump_bytes():
     with pytest.raises(TypeError):
