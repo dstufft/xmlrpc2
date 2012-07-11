@@ -17,6 +17,9 @@ except ImportError:
     gzip = None  # python can be built without zlib/gzip support
 
 
+import requests
+
+
 from . import __version__
 from .constants import MAXINT, MININT
 from .exceptions import UnsupportedScheme
@@ -884,258 +887,6 @@ class _Method:
     def __call__(self, *args):
         return self.__send(self.__name, args)
 
-##
-# Standard transport class for XML-RPC over HTTP.
-# <p>
-# You can create custom transports by subclassing this method, and
-# overriding selected methods.
-
-
-class Transport:
-    """Handles an HTTP transaction to an XML-RPC server."""
-
-    # client identifier (may be overridden)
-    user_agent = "xmlrpclib.py/%s (by www.pythonware.com)" % __version__
-
-    #if true, we'll request gzip encoding
-    accept_gzip_encoding = True
-
-    # if positive, encode request using gzip if it exceeds this threshold
-    # note that many server will get confused, so only use it if you know
-    # that they can decode such a request
-    encode_threshold = None  # None = don't encode
-
-    def __init__(self, use_datetime=False):
-        self._use_datetime = use_datetime
-        self._connection = (None, None)
-        self._extra_headers = []
-
-    ##
-    # Send a complete request, and parse the response.
-    # Retry request if a cached connection has disconnected.
-    #
-    # @param host Target host.
-    # @param handler Target PRC handler.
-    # @param request_body XML-RPC request body.
-    # @param verbose Debugging flag.
-    # @return Parsed response.
-
-    def request(self, host, handler, request_body, verbose=False):
-        #retry request once if cached connection has gone cold
-        for i in (0, 1):
-            try:
-                return self.single_request(host, handler, request_body, verbose)
-            except socket.error as e:
-                if i or e.errno not in (errno.ECONNRESET, errno.ECONNABORTED, errno.EPIPE):
-                    raise
-            except httplib.BadStatusLine:  # close after we sent request
-                if i:
-                    raise
-
-    def single_request(self, host, handler, request_body, verbose=False):
-        # issue XML-RPC request
-        try:
-            http_conn = self.send_request(host, handler, request_body, verbose)
-            resp = http_conn.getresponse()
-            if resp.status == 200:
-                self.verbose = verbose
-                return self.parse_response(resp)
-
-        except Fault:
-            raise
-        except Exception:
-            #All unexpected errors leave connection in
-            # a strange state, so we clear it.
-            self.close()
-            raise
-
-        #We got an error response.
-        #Discard any response data and raise exception
-        if resp.getheader("content-length", ""):
-            resp.read()
-        raise ProtocolError(
-            host + handler,
-            resp.status, resp.reason,
-            dict(resp.getheaders())
-            )
-
-    ##
-    # Create parser.
-    #
-    # @return A 2-tuple containing a parser and a unmarshaller.
-
-    def getparser(self):
-        # get parser and unmarshaller
-        return getparser(use_datetime=self._use_datetime)
-
-    ##
-    # Get authorization info from host parameter
-    # Host may be a string, or a (host, x509-dict) tuple; if a string,
-    # it is checked for a "user:pw@host" format, and a "Basic
-    # Authentication" header is added if appropriate.
-    #
-    # @param host Host descriptor (URL or (URL, x509 info) tuple).
-    # @return A 3-tuple containing (actual host, extra headers,
-    #     x509 info).  The header and x509 fields may be None.
-
-    def get_host_info(self, host):
-
-        x509 = {}
-        if isinstance(host, tuple):
-            host, x509 = host
-
-        auth, host = urllib_parse.splituser(host)
-
-        if auth:
-            auth = urllib_parse.unquote_to_bytes(auth)
-            auth = base64.encodebytes(auth).decode("utf-8")
-            auth = "".join(auth.split())  # get rid of whitespace
-            extra_headers = [
-                ("Authorization", "Basic " + auth)
-                ]
-        else:
-            extra_headers = []
-
-        return host, extra_headers, x509
-
-    ##
-    # Connect to server.
-    #
-    # @param host Target host.
-    # @return An HTTPConnection object
-
-    def make_connection(self, host):
-        #return an existing connection if possible.  This allows
-        #HTTP/1.1 keep-alive.
-        if self._connection and host == self._connection[0]:
-            return self._connection[1]
-        # create a HTTP connection object from a host descriptor
-        chost, self._extra_headers, x509 = self.get_host_info(host)
-        self._connection = host, httplib.HTTPConnection(chost)
-        return self._connection[1]
-
-    ##
-    # Clear any cached connection object.
-    # Used in the event of socket errors.
-    #
-    def close(self):
-        if self._connection[1]:
-            self._connection[1].close()
-            self._connection = (None, None)
-
-    ##
-    # Send HTTP request.
-    #
-    # @param host Host descriptor (URL or (URL, x509 info) tuple).
-    # @param handler Targer RPC handler (a path relative to host)
-    # @param request_body The XML-RPC request body
-    # @param debug Enable debugging if debug is true.
-    # @return An HTTPConnection.
-
-    def send_request(self, host, handler, request_body, debug):
-        connection = self.make_connection(host)
-        headers = self._extra_headers[:]
-        if debug:
-            connection.set_debuglevel(1)
-        if self.accept_gzip_encoding and gzip:
-            connection.putrequest("POST", handler, skip_accept_encoding=True)
-            headers.append(("Accept-Encoding", "gzip"))
-        else:
-            connection.putrequest("POST", handler)
-        headers.append(("Content-Type", "text/xml"))
-        headers.append(("User-Agent", self.user_agent))
-        self.send_headers(connection, headers)
-        self.send_content(connection, request_body)
-        return connection
-
-    ##
-    # Send request headers.
-    # This function provides a useful hook for subclassing
-    #
-    # @param connection httpConnection.
-    # @param headers list of key,value pairs for HTTP headers
-
-    def send_headers(self, connection, headers):
-        for key, val in headers:
-            connection.putheader(key, val)
-
-    ##
-    # Send request body.
-    # This function provides a useful hook for subclassing
-    #
-    # @param connection httpConnection.
-    # @param request_body XML-RPC request body.
-
-    def send_content(self, connection, request_body):
-        #optionally encode the request
-        if (self.encode_threshold is not None and
-            self.encode_threshold < len(request_body) and
-            gzip):
-            connection.putheader("Content-Encoding", "gzip")
-            request_body = gzip_encode(request_body)
-
-        connection.putheader("Content-Length", str(len(request_body)))
-        connection.endheaders()
-
-        if request_body:
-            connection.send(request_body)
-
-    ##
-    # Parse response.
-    #
-    # @param file Stream.
-    # @return Response tuple and target method.
-
-    def parse_response(self, response):
-        # read response data from httpresponse, and parse it
-        # Check for new http response object, otherwise it is a file object.
-        if hasattr(response, 'getheader'):
-            if response.getheader("Content-Encoding", "") == "gzip":
-                stream = GzipDecodedResponse(response)
-            else:
-                stream = response
-        else:
-            stream = response
-
-        p, u = self.getparser()
-
-        while 1:
-            data = stream.read(1024)
-            if not data:
-                break
-            if self.verbose:
-                print("body:", repr(data))
-            p.feed(data)
-
-        if stream is not response:
-            stream.close()
-        p.close()
-
-        return u.close()
-
-##
-# Standard transport class for XML-RPC over HTTPS.
-
-
-class SafeTransport(Transport):
-    """Handles an HTTPS transaction to an XML-RPC server."""
-
-    # FIXME: mostly untested
-
-    def make_connection(self, host):
-        if self._connection and host == self._connection[0]:
-            return self._connection[1]
-
-        if not hasattr(httplib, "HTTPSConnection"):
-            raise NotImplementedError(
-            "your version of httplib doesn't support HTTPS")
-        # create a HTTPS connection object from a host descriptor
-        # host may be a string, or a (host, x509-dict) tuple
-        chost, self._extra_headers, x509 = self.get_host_info(host)
-        self._connection = host, httplib.HTTPSConnection(chost,
-            None, **(x509 or {}))
-        return self._connection[1]
-
 
 class Client(UnicodeMixin, object):
     """
@@ -1160,62 +911,38 @@ class Client(UnicodeMixin, object):
     the given encoding.
     """
 
-    _supported_schemes = set(["http", "https"])
-
-    def __init__(self, uri, transport=None, encoding=None, allow_none=False, *args, **kwargs):
+    def __init__(self, uri, session=None, encoding=None, allow_none=False, *args, **kwargs):
         super(Client, self).__init__(*args, **kwargs)
 
-        parsed = urllib_parse.urlparse(uri)
+        headers = {"Content-Type": "text/xml", "Accept": "text/xml"}
 
-        if not parsed.scheme in self._supported_schemes:
-            msg = "%s is not a support scheme. Must be one of (%s)"
-            msg = msg % (parsed.scheme, ",".join(self._supported_schemes))
+        self._uri = uri
+        self._session = requests.session(headers=headers)
 
-            raise UnsupportedScheme(msg)
-
-        self._scheme = parsed.scheme
-        self._host = parsed.netloc
-        self._handler = parsed.path if parsed.path else "/RPC2"
-
-        self._encoding = encoding if encoding is not None else "utf-8"
         self._allow_none = allow_none
+        self._encoding = encoding if encoding is not None else "utf-8"
 
-        if transport is None:
-            if self._scheme == "https":
-                transport = SafeTransport(use_datetime=True)
-            else:
-                transport = Transport(use_datetime=True)
+    def __getattr__(self, item):
+        if item.startswith("_"):
+            raise AttributeError(item)
 
-        self._transport = transport
-
-    def __getattr__(self, name):
-        if not name.startswith("_"):
-            return _Method(self._request, name)
-
-        return super(Client, self).__getattr_(name)
+        return _Method(self._request, item)
 
     def __unicode__(self):
-        uri = urllib_parse.urlunparse([self._scheme, self._host, self._handler, None, None, None])
-        return "<Client (%s)>" % uri
+        return "<Client (%s)>" % self._uri
 
     def __repr__(self):
         return self.__str__()
 
-    def _close(self):
-        self._transport.close()
-
     def _request(self, methodname, params):
-        request = dumps(params, methodname, encoding=self._encoding,
-                        allow_none=self._allow_none).encode(self._encoding)
+        body = dumps(params, methodname, encoding=self._encoding, allow_none=self._allow_none).encode(self._encoding)
 
-        response = self._transport.request(
-            self._host,
-            self._handler,
-            request,
-            verbose=None
-            )
+        response = self._session.post(self._uri, body)
+        response.raise_for_status()
 
-        if len(response) == 1:
-            response = response[0]
+        result = loads(response.text.encode("utf-8"))[0]
 
-        return response
+        if len(result) == 1:
+            result = result[0]
+
+        return result
