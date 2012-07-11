@@ -3,11 +3,12 @@ from __future__ import division
 
 import base64
 import datetime
-import time
-from xml.parsers import expat
-import socket
 import errno
+import socket
+import time
+
 from io import BytesIO
+from xml.parsers import expat
 
 try:
     import gzip
