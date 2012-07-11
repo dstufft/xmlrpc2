@@ -17,3 +17,10 @@ def test_valid_urls(url):
 def test_invalid_urls(url):
     with pytest.raises(UnsupportedScheme):
         xmlrpc2.client.Client(url)
+
+
+def test_string_representation():
+    client = xmlrpc2.client.Client("http://example.com/foo")
+
+    assert str(client) == "<Client (http://example.com/foo)>"
+    assert repr(client) == "<Client (http://example.com/foo)>"
