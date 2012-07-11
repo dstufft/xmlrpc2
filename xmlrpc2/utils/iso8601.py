@@ -21,7 +21,7 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from datetime import datetime, timedelta, tzinfo
+import datetime
 import re
 
 __all__ = ["parse", "ParseError"]
@@ -38,10 +38,10 @@ class ParseError(Exception):
     """Raised when there is a problem parsing a date string"""
 
 # Yoinked from python docs
-ZERO = timedelta(0)
+ZERO = datetime.timedelta(0)
 
 
-class Utc(tzinfo):
+class Utc(datetime.tzinfo):
     """UTC
 
     """
@@ -58,12 +58,12 @@ class Utc(tzinfo):
 UTC = Utc()
 
 
-class FixedOffset(tzinfo):
+class FixedOffset(datetime.tzinfo):
     """Fixed offset in hours and minutes from UTC
 
     """
     def __init__(self, offset_hours, offset_minutes, name):
-        self.__offset = timedelta(hours=offset_hours, minutes=offset_minutes)
+        self.__offset = datetime.timedelta(hours=offset_hours, minutes=offset_minutes)
         self.__name = name
 
     def utcoffset(self, dt):
@@ -118,6 +118,6 @@ def parse(datestring, default_timezone=UTC):
         groups["fraction"] = 0
     else:
         groups["fraction"] = int(float("0.%s" % groups["fraction"]) * 1e6)
-    return datetime(int(groups["year"]), int(groups["month"]), int(groups["day"]),
+    return datetime.datetime(int(groups["year"]), int(groups["month"]), int(groups["day"]),
         int(groups["hour"]), int(groups["minute"]), int(groups["second"]),
         int(groups["fraction"]), tz)
