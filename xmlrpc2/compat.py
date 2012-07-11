@@ -16,8 +16,12 @@ is_py3 = (_ver[0] == 3)
 
 
 if is_py2:
+    import base64
     import httplib
     import urllib as urllib_parse
+
+    base64.encodebytes = base64.encodestring
+    base64.decodebytes = base64.decodestring
 
     bytes = str
     str = unicode
