@@ -167,7 +167,22 @@ class Client(UnicodeMixin, object):
         headers = {"Content-Type": "text/xml", "Accept": "text/xml"}
 
         self._uri = uri
-        self._session = requests.session(headers=headers)
+
+        if session is None:
+            self._session = requests.session(headers=headers)
+        else:
+            # Merge the sessions together
+            attrs = {}
+
+            for attr in requests.Session.__attrs__:
+                if attr == "headers":
+                    headers.update(getattr(session, attr, {}))
+
+                    attrs[attr] = headers
+                else:
+                    attrs[attr] = getattr(session, attr)
+
+            self._session = requests.session(**attrs)
 
         self._allow_none = allow_none
         self._encoding = encoding if encoding is not None else "utf-8"
