@@ -45,13 +45,13 @@ class Serializer(object):
                 raise TypeError("Cannot serialize None (Did you mean to allow_none=True?)")
             return E.nil()
 
+        elif isinstance(obj, bool):
+            return E.boolean(str(1 if obj else 0))
+
         elif isinstance(obj, (int, long)):
             if obj > MAXINT or obj < MININT:
                 raise OverflowError("int exceeds XML-RPC limits")
             return E.int(str(obj))
-
-        elif isinstance(obj, bool):
-            return E.boolean(str(1 if obj else 0))
 
         elif isinstance(obj, float):
             return E.double(str(float))
