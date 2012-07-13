@@ -3,6 +3,7 @@ import datetime
 from collections import Iterable, Mapping
 
 from .constants import MAXINT, MININT
+from .exceptions import Fault
 from .utils import iso8601
 from .utils.xml import E, etree
 
@@ -31,7 +32,10 @@ class Serializer(object):
         # @@@ Detect Faults
         methodResponse = etree.XML(data)
 
-        value = methodResponse.xpath("/methodResponse/params/param/value")[0][0]
+        if methodResponse.xpath("/methodResponse/fault"):
+            value = methodResponse.xpath("/methodResponse/fault")[0]
+        else:
+            value = methodResponse.xpath("/methodResponse/params/param/value")[0][0]
 
         return self.load_arg(value)
 
@@ -140,5 +144,8 @@ class Serializer(object):
             return data
         elif obj.tag == "array":
             return [self.load_arg(x[0]) for x in obj[0]]
+        elif obj.tag == "fault":
+            data = self.load_arg(obj.xpath("//fault/value")[0][0])
+            raise Fault(data["faultCode"], data["faultString"])
         else:
             raise TypeError("Cannot unserialize %s. Unknown Type." % obj)
