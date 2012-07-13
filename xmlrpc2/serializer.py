@@ -122,15 +122,17 @@ class Serializer(object):
             data = {}
 
             for member in obj:
-                key, value = None, None
+                key, value, tags = None, None, set()
 
                 for item in member:
+                    tags.add(item.tag)
+
                     if item.tag == "name":
                         key = item.text
                     elif item.tag == "value":
                         value = self.load_arg(item[0])
 
-                if key is None or value is None:
+                if not tags == set(["name", "value"]):
                     raise TypeError("Cannot deserialize struct it is missing name or value tags in members")
 
                 data[key] = value
