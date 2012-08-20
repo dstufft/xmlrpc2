@@ -76,7 +76,7 @@ def test_all_data_types_method_call():
     ({"superman": "clark kent", "batman": "bruce wayne"}, b"<value><struct><member><name>batman</name><value><string>bruce wayne</string></value></member><member><name>superman</name><value><string>clark kent</string></value></member></struct></value>"),
     (["one", "two", "buckle my shoe", "three", "four", "shut the door"], b"<value><array><data><value><string>one</string></value><value><string>two</string></value><value><string>buckle my shoe</string></value><value><string>three</string></value><value><string>four</string></value><value><string>shut the door</string></value></data></array></value>"),
 ])
-def test_to_xml2(inp, expected):
+def test_to_xml(inp, expected):
     s = Serializer()
     value = etree.tostring(s.to_xml(inp))
     assert value == expected
