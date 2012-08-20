@@ -24,20 +24,20 @@ class Client(object):
             transports = [HTTPTransport]
 
         # Initialize transports
-        self.transports = {}
+        self._transports = {}
         for transport in transports:
             t = transport()
-            self.transports[t.scheme] = t
+            self._transports[t.scheme] = t
 
         parsed = urllib.parse.urlparse(uri)
 
-        if parsed.scheme not in self.transports:
-            raise ValueError("Invalid uri scheme {scheme}. Must be one of {available}.".format(scheme=parsed.scheme, available=",".join(self.transports)))
+        if parsed.scheme not in self._transports:
+            raise ValueError("Invalid uri scheme {scheme}. Must be one of {available}.".format(scheme=parsed.scheme, available=",".join(self._transports)))
 
-        self.transport = self.transports[parsed.scheme]
+        self._transport = self._transports[parsed.scheme]
 
         # Default to /RPC2 for path as it is a common endpoint
         if not parsed.path:
             parsed = parsed[:2] + ("/RPC2",) + parsed[3:]
 
-        self.uri = urllib.parse.urlunparse(parsed)
+        self._uri = urllib.parse.urlunparse(parsed)
