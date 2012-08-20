@@ -42,6 +42,8 @@ class Serializer(object):
 
         print(etree.tostring(xml))
 
+        return etree.tostring(xml)
+
     def to_xml(self, data):
         value = etree.Element("value")
 
