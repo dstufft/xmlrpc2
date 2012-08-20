@@ -11,9 +11,9 @@ setup(
     version="0.1dev",
 
     description="",
-    #long_description=open("README.rst").read(),
+    long_description=open("README.rst").read(),
     url="https://github.com/dstufft/xmlrpc2",
-    #license=open("LICENSE").read(),
+    license=open("LICENSE").read(),
 
     author="Donald Stufft",
     author_email="donald.stufft@gmail.com",
