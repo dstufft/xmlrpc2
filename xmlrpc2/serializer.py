@@ -92,3 +92,47 @@ class Serializer(object):
         value.append(item)
 
         return value
+
+    def from_xml(self, data):
+        if not data.tag == "value":
+            raise ValueError("Cannot deserialize a non value")
+
+        # Values without a type are considered strings
+        if data.text:
+            return data.text
+
+        # XMLRPC packets always have a single item inside of a value
+        value = data[0]
+
+        if value.tag == "string":
+            return value.text
+        elif value.tag == "boolean":
+            return bool(int(value.text))
+        elif value.tag in ("int", "i4"):
+            return int(value.text)
+        elif value.tag == "double":
+            return float(value.text)
+        elif value.tag == "dateTime.iso8601":
+            return datetime.datetime.strptime(value.text, "%Y-%m-%dT%H:%M:%S")  # @@@ Optionally use dateutil?
+        elif value.tag == "base64":
+            return base64.b64decode(value.text.encode("utf-8"))
+        elif value.tag == "struct":
+            mapping = {}
+
+            for member in value.iterchildren():
+                key, value = None, None
+                for i in member.iterchildren():
+                    if i.tag == "name":
+                        key = i.text
+                    elif i.tag == "value":
+                        value = self.from_xml(i)
+                    else:
+                        raise ValueError("Unknown struct members")
+                mapping[key] = value
+
+            return mapping
+        elif value.tag == "array":
+            array_data = value.find("data")
+            return [self.from_xml(x) for x in array_data.iterchildren()]
+        else:
+            ValueError("Unable to deserialize {type}, unknown type".format(type=value.tag))

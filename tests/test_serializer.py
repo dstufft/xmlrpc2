@@ -80,3 +80,22 @@ def test_to_xml(inp, expected):
     s = Serializer()
     value = etree.tostring(s.to_xml(inp))
     assert value == expected
+
+
+@pytest.mark.parametrize(("expected", "inp"), [
+    ("one two", b"<value><string>one two</string></value>"),
+    ("\x80abc", b"<value><string>&#128;abc</string></value>"),
+    (True, b"<value><boolean>1</boolean></value>"),
+    (False, b"<value><boolean>0</boolean></value>"),
+    (50, b"<value><int>50</int></value>"),
+    (101.9, b"<value><double>101.9</double></value>"),
+    (datetime.datetime(year=2012, month=8, day=20, hour=5, minute=32, second=5), b"<value><dateTime.iso8601>2012-08-20T05:32:05</dateTime.iso8601></value>"),
+    (b"what up dawg", b"<value><base64>d2hhdCB1cCBkYXdn</base64></value>"),
+    ({"superman": "clark kent", "batman": "bruce wayne"}, b"<value><struct><member><name>batman</name><value><string>bruce wayne</string></value></member><member><name>superman</name><value><string>clark kent</string></value></member></struct></value>"),
+    (["one", "two", "buckle my shoe", "three", "four", "shut the door"], b"<value><array><data><value><string>one</string></value><value><string>two</string></value><value><string>buckle my shoe</string></value><value><string>three</string></value><value><string>four</string></value><value><string>shut the door</string></value></data></array></value>"),
+])
+def test_from_xml(inp, expected):
+    s = Serializer()
+
+    value = s.from_xml(etree.fromstring(inp))
+    assert value == expected
