@@ -4,6 +4,10 @@ from __future__ import unicode_literals
 
 import urllib.parse
 
+import requests
+
+from .serializer import Serializer
+
 
 class BaseTransport(object):
 
@@ -11,23 +15,39 @@ class BaseTransport(object):
     def scheme(self):
         raise NotImplementedError("Transports must have a scheme")
 
+    def request(self, uri, body):
+        raise NotImplementedError("Transports must implement request")
+
 
 class HTTPTransport(BaseTransport):
 
     scheme = "http"
 
+    def __init__(self, session=None):
+        if session is None:
+            session = requests.session()
+
+        # text/xml is a mandatory content type
+        session.headers.update({"Content-Type": "text/xml"})
+
+        self.session = session
+
+    def request(self, uri, body):
+        resp = self.session.post(uri, body)
+        resp.raise_for_status()
+        return resp.text
+
 
 class Client(object):
 
-    def __init__(self, uri, transports=None):
+    def __init__(self, uri, transports=None, serializer=None):
         if transports is None:
-            transports = [HTTPTransport]
+            transports = [HTTPTransport()]
 
-        # Initialize transports
-        self._transports = {}
-        for transport in transports:
-            t = transport()
-            self._transports[t.scheme] = t
+        if serializer is None:
+            serializer = Serializer()
+
+        self._transports = dict([(t.scheme, t) for t in transports])
 
         parsed = urllib.parse.urlparse(uri)
 
@@ -41,3 +61,28 @@ class Client(object):
             parsed = parsed[:2] + ("/RPC2",) + parsed[3:]
 
         self._uri = urllib.parse.urlunparse(parsed)
+
+        self._serializer = serializer
+
+    def __call__(self, method, *args):
+        data = {
+            "methodCall": {
+                "methodName": method,
+                "params": args,
+            }
+        }
+
+        body = self._serializer.serialize(data)
+        resp = self._transport.request(self._uri, body)
+        values = self._serializer.deserialize(resp)
+
+        if "methodResponse" in values:
+            values = values["methodResponse"]
+        else:
+            raise TypeError("Unknown return from xmlrpc call")
+
+        if "params" in values:
+            if len(values["params"]) == 1:
+                return values["params"][0]
+            elif len(values["params"]) > 1:
+                return values["params"]
