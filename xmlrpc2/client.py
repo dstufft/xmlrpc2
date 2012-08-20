@@ -36,6 +36,7 @@ class Client(object):
 
         self.transport = self.transports[parsed.scheme]
 
+        # Default to /RPC2 for path as it is a common endpoint
         if not parsed.path:
             parsed = parsed[:2] + ("/RPC2",) + parsed[3:]
 
