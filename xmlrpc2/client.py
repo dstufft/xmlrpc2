@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import functools
 import urllib.parse
 
 import requests
@@ -86,3 +87,6 @@ class Client(object):
                 return values["params"][0]
             elif len(values["params"]) > 1:
                 return values["params"]
+
+    def __getattr__(self, name):
+        return functools.partial(self, name)
