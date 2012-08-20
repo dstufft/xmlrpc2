@@ -3,7 +3,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import functools
-import urllib.parse
+
+try:
+    import urllib.parse as urllib_parse
+except ImportError:
+    import urlparse as urllib_parse
 
 from . import requests
 from .serializer import Serializer
@@ -57,7 +61,7 @@ class Client(object):
 
         self._transports = dict([(t.scheme, t) for t in transports])
 
-        parsed = urllib.parse.urlparse(uri)
+        parsed = urllib_parse.urlparse(uri)
 
         if parsed.scheme not in self._transports:
             raise ValueError("Invalid uri scheme {scheme}. Must be one of {available}.".format(scheme=parsed.scheme, available=",".join(self._transports)))
@@ -68,7 +72,7 @@ class Client(object):
         if not parsed.path:
             parsed = parsed[:2] + ("/RPC2",) + parsed[3:]
 
-        self._uri = urllib.parse.urlunparse(parsed)
+        self._uri = urllib_parse.urlunparse(parsed)
 
         self._serializer = serializer
 
