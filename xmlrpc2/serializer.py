@@ -8,6 +8,8 @@ import datetime
 
 from lxml import etree
 
+from . import six
+
 
 __all__ = ["Serializer"]
 
@@ -79,22 +81,22 @@ class Serializer(object):
     def to_xml(self, data):
         value = etree.Element("value")
 
-        if isinstance(data, str):
+        if isinstance(data, six.text_type):
             item = etree.Element("string")
             item.text = data
         elif isinstance(data, bool):
             item = etree.Element("boolean")
-            item.text = str(1 if data else 0)
+            item.text = six.text_type(1 if data else 0)
         elif isinstance(data, int):
             item = etree.Element("int")
-            item.text = str(data)
+            item.text = six.text_type(data)
         elif isinstance(data, float):
             item = etree.Element("double")
-            item.text = str(data)
+            item.text = six.text_type(data)
         elif isinstance(data, datetime.datetime):
             item = etree.Element("dateTime.iso8601")
             item.text = data.isoformat()
-        elif isinstance(data, bytes):
+        elif isinstance(data, six.binary_type):
             item = etree.Element("base64")
             item.text = base64.b64encode(data)
         elif isinstance(data, collections.Mapping):
