@@ -55,6 +55,12 @@ class Serializer(object):
             python["methodCall"]["methodName"] = methodName
 
             data = python["methodCall"]
+        elif xml.tag == "methodResponse":
+            python = {
+                "methodResponse": {},
+            }
+
+            data = python["methodResponse"]
         else:
             raise ValueError("xmlrpc packet not able to be deserialized")
 
