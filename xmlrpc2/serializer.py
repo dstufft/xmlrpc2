@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
 import base64
 import datetime
 
@@ -59,6 +60,27 @@ class Serializer(object):
         elif isinstance(data, bytes):
             item = etree.Element("base64")
             item.text = base64.b64encode(data)
+        elif isinstance(data, collections.Mapping):
+            item = etree.Element("struct")
+
+            for k, v in data.items():
+                member = etree.Element("member")
+
+                name = etree.Element("name")
+                name.text = k
+
+                member.append(name)
+                member.append(self.to_xml(v))
+
+                item.append(member)
+        elif isinstance(data, collections.Iterable):
+            item = etree.Element("array")
+            array_data = etree.Element("data")
+
+            for x in data:
+                array_data.append(self.to_xml(x))
+
+            item.append(array_data)
         else:
             raise ValueError("Unable to serialize {cls} objects, unknown type".format(cls=data.__class__.__name__))
 
