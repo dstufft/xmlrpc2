@@ -42,6 +42,34 @@ class Serializer(object):
 
         return etree.tostring(xml)
 
+    def deserialize(self, data):
+        xml = etree.fromstring(data)
+
+        if xml.tag == "methodCall":
+            python = {
+                "methodCall": {},
+            }
+
+            methodName = xml.findtext("methodName")
+
+            python["methodCall"]["methodName"] = methodName
+
+            data = python["methodCall"]
+        else:
+            raise ValueError("xmlrpc packet not able to be deserialized")
+
+        params = xml.find("params")
+
+        if params is not None:
+            data["params"] = []
+            for item in params.iterchildren():
+                if item.tag == "param":
+                    data["params"].append(self.from_xml(item.find("value")))
+                else:
+                    raise ValueError("Incorrect tag inside of params")
+
+        return python
+
     def to_xml(self, data):
         value = etree.Element("value")
 
