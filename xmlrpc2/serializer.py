@@ -42,18 +42,18 @@ class Serializer(object):
     def to_xml(self, data):
         value = etree.Element("value")
 
-        if isinstance(data, int):
-            item = etree.Element("int")
+        if isinstance(data, str):
+            item = etree.Element("string")
             item.text = data
         elif isinstance(data, bool):
             item = etree.Element("boolean")
-            item.text = 1 if data else 0
-        elif isinstance(data, str):
-            item = etree.Element("string")
-            item.text = data
+            item.text = str(1 if data else 0)
+        elif isinstance(data, int):
+            item = etree.Element("int")
+            item.text = str(data)
         elif isinstance(data, float):
             item = etree.Element("double")
-            item.text = data
+            item.text = str(data)
         elif isinstance(data, datetime.datetime):
             item = etree.Element("dateTime.iso8601")
             item.text = data.isoformat()
