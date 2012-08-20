@@ -9,6 +9,9 @@ from . import requests
 from .serializer import Serializer
 
 
+__all__ = ["BaseTransport", "HTTPTransport", "HTTPSTransport", "Client"]
+
+
 class BaseTransport(object):
 
     @property
