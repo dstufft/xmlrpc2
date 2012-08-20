@@ -9,6 +9,9 @@ import datetime
 from lxml import etree
 
 
+__all__ = ["Serializer"]
+
+
 class Serializer(object):
 
     def serialize(self, data):
