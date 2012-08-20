@@ -5,8 +5,7 @@ from __future__ import unicode_literals
 import functools
 import urllib.parse
 
-import requests
-
+from . import requests
 from .serializer import Serializer
 
 
