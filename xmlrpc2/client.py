@@ -39,11 +39,16 @@ class HTTPTransport(BaseTransport):
         return resp.text
 
 
+class HTTPSTransport(HTTPTransport):
+
+    scheme = "https"
+
+
 class Client(object):
 
     def __init__(self, uri, transports=None, serializer=None):
         if transports is None:
-            transports = [HTTPTransport()]
+            transports = [HTTPTransport(), HTTPSTransport()]
 
         if serializer is None:
             serializer = Serializer()
