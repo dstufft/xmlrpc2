@@ -2,6 +2,8 @@
 from setuptools import setup, find_packages
 
 install_requires = [
+    "lxml",
+    "requests",
 ]
 
 setup(
@@ -18,7 +20,9 @@ setup(
 
     install_requires=install_requires,
 
-    extras_require={},
+    extras_require={
+        "tests": ["pytest"],
+    },
 
     packages=find_packages(exclude=["tests"]),
     zip_safe=False,
