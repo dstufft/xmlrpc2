@@ -8,7 +8,7 @@ install_requires = [
 
 setup(
     name="xmlrpc2",
-    version="0.1dev",
+    version="0.1",
 
     description="",
     long_description=open("README.rst").read(),
