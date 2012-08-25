@@ -7,10 +7,9 @@ import base64
 import datetime
 
 import dateutil.parser
+import six
 
 from lxml import etree
-
-from . import six
 
 
 __all__ = ["Serializer"]

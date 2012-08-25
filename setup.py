@@ -5,6 +5,7 @@ install_requires = [
     "lxml",
     "python-dateutil>=2.1",
     "requests",
+    "six",
 ]
 
 setup(
