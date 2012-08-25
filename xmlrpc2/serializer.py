@@ -6,6 +6,8 @@ import collections
 import base64
 import datetime
 
+import dateutil.parser
+
 from lxml import etree
 
 from . import six
@@ -152,7 +154,7 @@ class Serializer(object):
         elif value.tag == "double":
             return float(value.text)
         elif value.tag == "dateTime.iso8601":
-            return datetime.datetime.strptime(value.text, "%Y-%m-%dT%H:%M:%S")  # @@@ Optionally use dateutil?
+            return dateutil.parser.parse(value.text)
         elif value.tag == "base64":
             return base64.b64decode(value.text.encode("utf-8"))
         elif value.tag == "struct":
