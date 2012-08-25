@@ -76,6 +76,11 @@ class Serializer(object):
                 else:
                     raise ValueError("Incorrect tag inside of params")
 
+        fault = xml.find("fault")
+
+        if fault is not None:
+            data["fault"] = self.from_xml(fault.find("value"))
+
         return python
 
     def to_xml(self, data):

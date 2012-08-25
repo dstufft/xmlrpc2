@@ -10,6 +10,7 @@ except ImportError:
     import urlparse as urllib_parse
 
 from . import requests
+from .exceptions import Fault
 from .serializer import Serializer
 
 
@@ -98,6 +99,9 @@ class Client(object):
                 return values["params"][0]
             elif len(values["params"]) > 1:
                 return values["params"]
+
+        if "fault" in values:
+            raise Fault(values["fault"]["faultString"], code=values["fault"]["faultCode"])
 
     def __getattr__(self, name):
         return functools.partial(self, name)
