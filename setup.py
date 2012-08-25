@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 
 install_requires = [
     "lxml",
-    "requests",
     "python-dateutil>=2.1",
+    "requests",
 ]
 
 setup(
