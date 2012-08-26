@@ -27,5 +27,6 @@ setup(
     },
 
     packages=find_packages(exclude=["tests"]),
+    package_data={"": ["LICENSE"]},
     zip_safe=False,
 )
