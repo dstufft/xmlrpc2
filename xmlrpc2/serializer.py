@@ -145,7 +145,7 @@ class Serializer(object):
         value = data[0]
 
         if value.tag == "string":
-            return value.text
+            return six.text_type(value.text)
         elif value.tag == "boolean":
             return bool(int(value.text))
         elif value.tag in ("int", "i4"):
