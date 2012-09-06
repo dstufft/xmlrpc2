@@ -43,7 +43,7 @@ class HTTPTransport(BaseTransport):
     def request(self, uri, body):
         resp = self.session.post(uri, body)
         resp.raise_for_status()
-        return resp.text
+        return resp.content
 
 
 class HTTPSTransport(HTTPTransport):
