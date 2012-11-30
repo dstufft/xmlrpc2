@@ -11,3 +11,7 @@ env:
 script: py.test
 install:
   - pip install "file://$PWD#egg=xmlrpc2[${EXTRAS}]"
+matrix:
+  exclude:
+    - python: PyPy
+      env: "EXTRAS=tests,lxml"
