@@ -9,7 +9,13 @@ import datetime
 import dateutil.parser
 import six
 
-from lxml import etree
+try:
+    from lxml import etree
+except ImportError:
+    try:
+        import xml.etree.cElementTree as etree
+    except ImportError:
+        import xml.etree.ElementTree as etree
 
 
 __all__ = ["Serializer"]
@@ -71,7 +77,7 @@ class Serializer(object):
 
         if params is not None:
             data["params"] = []
-            for item in params.iterchildren():
+            for item in params:
                 if item.tag == "param":
                     data["params"].append(self.from_xml(item.find("value")))
                 else:
@@ -159,9 +165,9 @@ class Serializer(object):
         elif value.tag == "struct":
             mapping = {}
 
-            for member in value.iterchildren():
+            for member in value:
                 key, value = None, None
-                for i in member.iterchildren():
+                for i in member:
                     if i.tag == "name":
                         key = i.text
                     elif i.tag == "value":
@@ -173,6 +179,6 @@ class Serializer(object):
             return mapping
         elif value.tag == "array":
             array_data = value.find("data")
-            return [self.from_xml(x) for x in array_data.iterchildren()]
+            return [self.from_xml(x) for x in array_data]
         else:
             ValueError("Unable to deserialize {type}, unknown type".format(type=value.tag))

@@ -8,7 +8,13 @@ import pytest
 
 from xmlrpc2.serializer import Serializer
 
-from lxml import etree
+try:
+    from lxml import etree
+except ImportError:
+    try:
+        import xml.etree.cElementTree as etree
+    except ImportError:
+        import xml.etree.ElementTree as etree
 
 
 @pytest.mark.parametrize(("inp", "expected"), [
@@ -50,7 +56,7 @@ def test_serialize_deserialize(inp, expected):
     serialized = s.serialize(inp)
     deserialized = s.deserialize(serialized)
 
-    assert serialized == expected
+    assert serialized == etree.tostring(etree.fromstring(expected))
     assert deserialized == inp
 
 

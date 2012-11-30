@@ -2,7 +2,6 @@
 from setuptools import setup, find_packages
 
 install_requires = [
-    "lxml",
     "python-dateutil>=2.1",
     "requests",
     "six",
@@ -24,6 +23,7 @@ setup(
 
     extras_require={
         "tests": ["pytest"],
+        "lxml": ["lxml"],
     },
 
     packages=find_packages(exclude=["tests"]),
