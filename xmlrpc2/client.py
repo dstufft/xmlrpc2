@@ -35,13 +35,10 @@ class HTTPTransport(BaseTransport):
         if session is None:
             session = requests.session()
 
-        # text/xml is a mandatory content type
-        session.headers.update({"Content-Type": "text/xml"})
-
         self.session = session
 
     def request(self, uri, body):
-        resp = self.session.post(uri, body)
+        resp = self.session.post(uri, body, headers={"Content-Type": "text/xml"})
         resp.raise_for_status()
         return resp.content
 
